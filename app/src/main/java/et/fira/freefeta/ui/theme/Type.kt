@@ -2,33 +2,83 @@ package et.fira.freefeta.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import et.fira.freefeta.R
 
-// Set of Material typography styles to start with
+val BebasNeue = FontFamily(
+    Font(R.font.bebas_neue_regular),
+)
+
+val Raleway = FontFamily(
+    Font(R.font.raleway_regular),
+    Font(R.font.raleway_bold, FontWeight.Bold),
+)
+
+val NotoSans = FontFamily(
+    Font(R.font.noto_sans_regular),
+    Font(R.font.noto_sans_bold, FontWeight.Bold),
+)
+
+val Lato = FontFamily(
+    Font(R.font.lato_regular),
+    Font(R.font.lato_bold, FontWeight.Bold),
+)
+
 val Typography = Typography(
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+    displayLarge = TextStyle(
+        fontFamily = BebasNeue,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    )
-    /* Other default text styles to override
+        fontSize = 36.sp,
+    ),
+    displayMedium = TextStyle(
+        fontFamily = BebasNeue,
+        fontWeight = FontWeight.Bold,
+        fontSize = 28.sp
+    ),
+    headlineLarge = TextStyle(
+        fontFamily = Raleway,
+        fontWeight = FontWeight.Normal,
+        fontSize = 24.sp
+    ),
+    headlineMedium = TextStyle(
+        fontFamily = Raleway,
+        fontWeight = FontWeight.Bold,
+        fontSize = 22.sp
+    ),
     titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = Raleway,
         fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
+        fontSize = 20.sp,
+
+    ),
+    titleMedium = TextStyle(
+        fontFamily = Raleway,
+        fontWeight = FontWeight.Bold,
+        fontSize = 16.sp,
+
+    ),
+    bodyLarge = TextStyle(
+        fontFamily = NotoSans,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp
+    ),
+    labelLarge = TextStyle(
+        fontFamily = Lato,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp
+    ),
+    labelMedium = TextStyle(
+        fontFamily = Lato,
+        fontWeight = FontWeight.Normal,
+        fontSize = 10.sp
     ),
     labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        fontFamily = Lato,
+        fontWeight = FontWeight.Bold,
+        fontSize = 10.sp
     )
-    */
+
 )
