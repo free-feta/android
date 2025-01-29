@@ -14,6 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import et.fira.freefeta.ui.FilePermissionHandler
+import et.fira.freefeta.ui.FreeFetaViewModel
 import et.fira.freefeta.ui.theme.FreeFetaTheme
 
 class MainActivity : ComponentActivity() {
@@ -34,8 +37,13 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun Greeting(
+    name: String,
+    modifier: Modifier = Modifier,
+    freeFetaViewModel: FreeFetaViewModel = viewModel(factory = FreeFetaViewModel.Factory)
+) {
     Column(modifier = modifier) {
+        FilePermissionHandler()
         Text(
             text = "Display Medium",
             style = MaterialTheme.typography.displayMedium,
