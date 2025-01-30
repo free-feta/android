@@ -23,7 +23,7 @@ class DefaultAppContainer(context: Context): AppContainer {
     private val teleFileDownloaderService = TeleFileDownloaderService(ketch)
 
     override val fileDownloaderRepository: FileDownloaderRepository by lazy {
-        VideoFileDownloaderRepository(teleFileDownloaderService)
+        MediaFileDownloaderRepository(teleFileDownloaderService)
     }
 
 }

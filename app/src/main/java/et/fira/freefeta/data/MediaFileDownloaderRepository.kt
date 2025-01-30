@@ -3,7 +3,7 @@ package et.fira.freefeta.data
 import android.os.Environment
 import et.fira.freefeta.network.TeleFileDownloaderService
 
-class VideoFileDownloaderRepository(
+class MediaFileDownloaderRepository(
     private val teleFileDownloaderService: TeleFileDownloaderService
 ): FileDownloaderRepository {
     override fun download(url: String): Int {
