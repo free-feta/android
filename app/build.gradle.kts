@@ -76,6 +76,9 @@ dependencies {
     // Permission for jetpack
     implementation ("com.google.accompanist:accompanist-permissions:0.37.0")
 
+    // Compose animation
+    implementation ("androidx.compose.animation:animation:1.7.7")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
