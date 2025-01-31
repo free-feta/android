@@ -8,6 +8,7 @@ import et.fira.freefeta.network.TeleFileDownloaderService
 
 interface AppContainer {
     val fileDownloaderRepository: FileDownloaderRepository
+    val mediaRepository: MediaRepository
 }
 
 class DefaultAppContainer(context: Context): AppContainer {
@@ -24,6 +25,10 @@ class DefaultAppContainer(context: Context): AppContainer {
 
     override val fileDownloaderRepository: FileDownloaderRepository by lazy {
         MediaFileDownloaderRepository(teleFileDownloaderService)
+    }
+
+    override val mediaRepository: MediaRepository by lazy {
+        OfflineMediaRepository(FreeFetaDatabase.getDatabase(context).mediaDao())
     }
 
 }
