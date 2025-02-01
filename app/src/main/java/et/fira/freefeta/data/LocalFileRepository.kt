@@ -1,31 +1,31 @@
 package et.fira.freefeta.data
 
-import et.fira.freefeta.model.Media
+import et.fira.freefeta.model.FileEntity
 import kotlinx.coroutines.flow.Flow
 
-interface MediaRepository {
+interface LocalFileRepository {
     /**
      * Retrieve all the medias from the the given data source.
      */
-    fun getAllMediasStream(): Flow<List<Media>>
+    fun getAllFilesStream(): Flow<List<FileEntity>>
 
     /**
      * Retrieve an media from the given data source that matches with the [id].
      */
-    fun getMediaStream(id: Int): Flow<Media?>
+    fun getFileStream(id: Int): Flow<FileEntity?>
 
     /**
      * Insert media in the data source
      */
-    suspend fun insertMedia(media: Media)
+    suspend fun insertFile(fileEntity: FileEntity)
 
     /**
      * Delete media from the data source
      */
-    suspend fun deleteMedia(media: Media)
+    suspend fun deleteFile(fileEntity: FileEntity)
 
     /**
      * Update media in the data source
      */
-    suspend fun updateMedia(media: Media)
+    suspend fun updateFile(fileEntity: FileEntity)
 }
