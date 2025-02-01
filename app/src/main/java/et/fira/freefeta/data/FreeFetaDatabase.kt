@@ -4,11 +4,13 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import et.fira.freefeta.model.Media
+import androidx.room.TypeConverters
+import et.fira.freefeta.model.FileEntity
 
-@Database(entities = [Media::class], version = 1, exportSchema = false)
+@Database(entities = [FileEntity::class], version = 2, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class FreeFetaDatabase: RoomDatabase() {
-    abstract fun mediaDao(): MediaDao
+    abstract fun fileDao(): FileDao
 
     companion object {
         @Volatile
