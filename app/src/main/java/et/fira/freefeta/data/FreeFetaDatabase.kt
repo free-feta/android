@@ -5,12 +5,16 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import et.fira.freefeta.model.Advertisement
+import et.fira.freefeta.model.AppConfig
 import et.fira.freefeta.model.FileEntity
 
-@Database(entities = [FileEntity::class], version = 2, exportSchema = false)
+@Database(entities = [FileEntity::class, AppConfig::class, Advertisement::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class FreeFetaDatabase: RoomDatabase() {
     abstract fun fileDao(): FileDao
+    abstract fun appConfigDao(): AppConfigDao
+    abstract fun adDao(): AdDao
 
     companion object {
         @Volatile
