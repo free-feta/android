@@ -7,7 +7,10 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.ketch.Ketch
 import com.ketch.NotificationConfig
 import et.fira.freefeta.R
+import et.fira.freefeta.network.FreeFetaApiService
 import et.fira.freefeta.network.TeleFileDownloaderService
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 private const val USER_PREFERENCE_NAME = "user_preferences"
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
@@ -16,7 +19,8 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
 
 interface AppContainer {
     val fileDownloaderRepository: FileDownloaderRepository
-    val mediaRepository: MediaRepository
+    val localFileRepository: LocalFileRepository
+    val remoteFileRepository: RemoteFileRepository
     val userPreferencesRepository: UserPreferencesRepository
 }
 
@@ -30,14 +34,29 @@ class DefaultAppContainer(context: Context): AppContainer {
         )
         .build(context)
 
+    private val baseUrl =
+        "https://raw.githubusercontent.com/fira-pro/json-store/refs/heads/main/free-feta/"
+
+    private val retrofit = Retrofit.Builder()
+        .addConverterFactory(GsonConverterFactory.create())
+        .baseUrl(baseUrl)
+        .build()
+
+    private val retrofitService: FreeFetaApiService by lazy {
+        retrofit.create(FreeFetaApiService::class.java)
+    }
+
     private val teleFileDownloaderService = TeleFileDownloaderService(ketch)
 
     override val fileDownloaderRepository: FileDownloaderRepository by lazy {
-        MediaFileDownloaderRepository(teleFileDownloaderService)
+        FileDownloaderRepository(teleFileDownloaderService)
     }
 
-    override val mediaRepository: MediaRepository by lazy {
-        OfflineMediaRepository(FreeFetaDatabase.getDatabase(context).mediaDao())
+    override val localFileRepository: LocalFileRepository by lazy {
+        LocalFileRepositoryImpl(FreeFetaDatabase.getDatabase(context).fileDao())
+    }
+    override val remoteFileRepository: RemoteFileRepository by lazy {
+        RemoteFileRepositoryImpl(retrofitService)
     }
     override val userPreferencesRepository: UserPreferencesRepository by lazy {
         UserPreferencesRepository(context.dataStore)
