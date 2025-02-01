@@ -1,6 +1,7 @@
 package et.fira.freefeta.data
 
 import androidx.room.TypeConverter
+import et.fira.freefeta.model.FileType
 import et.fira.freefeta.model.MediaType
 
 class Converters {
@@ -12,6 +13,16 @@ class Converters {
     @TypeConverter
     fun toMediaType(value: String?): MediaType? {
         return value?.let { MediaType.valueOf(it) }
+    }
+
+    @TypeConverter
+    fun fromFileType(value: FileType?): String? {
+        return value?.name
+    }
+
+    @TypeConverter
+    fun toFileType(value: String?): FileType? {
+        return value?.let { FileType.valueOf(it) }
     }
 }
 
