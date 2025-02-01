@@ -7,6 +7,10 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.ketch.Ketch
 import com.ketch.NotificationConfig
 import et.fira.freefeta.R
+import et.fira.freefeta.data.ad.AdRepository
+import et.fira.freefeta.data.ad.AdRepositoryImpl
+import et.fira.freefeta.data.config.AppConfigRepository
+import et.fira.freefeta.data.config.AppConfigRepositoryImpl
 import et.fira.freefeta.data.file.FileDownloaderRepository
 import et.fira.freefeta.data.file.LocalFileRepository
 import et.fira.freefeta.data.file.LocalFileRepositoryImpl
@@ -26,6 +30,8 @@ interface AppContainer {
     val fileDownloaderRepository: FileDownloaderRepository
     val localFileRepository: LocalFileRepository
     val remoteFileRepository: RemoteFileRepository
+    val appConfigRepository: AppConfigRepository
+    val adRepository: AdRepository
     val userPreferencesRepository: UserPreferencesRepository
 }
 
@@ -62,6 +68,12 @@ class DefaultAppContainer(context: Context): AppContainer {
     }
     override val remoteFileRepository: RemoteFileRepository by lazy {
         RemoteFileRepositoryImpl(retrofitService)
+    }
+    override val appConfigRepository: AppConfigRepository by lazy {
+        AppConfigRepositoryImpl(FreeFetaDatabase.getDatabase(context).appConfigDao())
+    }
+    override val adRepository: AdRepository by lazy {
+        AdRepositoryImpl(FreeFetaDatabase.getDatabase(context).adDao())
     }
     override val userPreferencesRepository: UserPreferencesRepository by lazy {
         UserPreferencesRepository(context.dataStore)
