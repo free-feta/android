@@ -1,4 +1,4 @@
-package et.fira.freefeta.data
+package et.fira.freefeta.data.file
 
 import et.fira.freefeta.model.FileEntity
 import kotlinx.coroutines.flow.Flow

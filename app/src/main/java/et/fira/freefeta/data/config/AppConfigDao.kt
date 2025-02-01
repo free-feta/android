@@ -1,4 +1,4 @@
-package et.fira.freefeta.data
+package et.fira.freefeta.data.config
 
 import androidx.room.Dao
 import androidx.room.Delete

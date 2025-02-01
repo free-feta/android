@@ -1,8 +1,9 @@
-package et.fira.freefeta.data
+package et.fira.freefeta.data.file
 
 import et.fira.freefeta.model.FileEntity
 import et.fira.freefeta.network.FreeFetaApiService
 
-class RemoteFileRepositoryImpl(private val freeFetaApiService: FreeFetaApiService) : RemoteFileRepository {
+class RemoteFileRepositoryImpl(private val freeFetaApiService: FreeFetaApiService) :
+    RemoteFileRepository {
     override suspend fun getFiles(): List<FileEntity> = freeFetaApiService.getFiles()
 }

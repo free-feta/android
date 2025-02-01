@@ -1,4 +1,4 @@
-package et.fira.freefeta.data
+package et.fira.freefeta.data.ad
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -7,7 +7,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import et.fira.freefeta.model.Advertisement
-import et.fira.freefeta.model.FileEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

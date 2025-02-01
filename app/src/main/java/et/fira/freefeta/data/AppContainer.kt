@@ -7,6 +7,11 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.ketch.Ketch
 import com.ketch.NotificationConfig
 import et.fira.freefeta.R
+import et.fira.freefeta.data.file.FileDownloaderRepository
+import et.fira.freefeta.data.file.LocalFileRepository
+import et.fira.freefeta.data.file.LocalFileRepositoryImpl
+import et.fira.freefeta.data.file.RemoteFileRepository
+import et.fira.freefeta.data.file.RemoteFileRepositoryImpl
 import et.fira.freefeta.network.FreeFetaApiService
 import et.fira.freefeta.network.TeleFileDownloaderService
 import retrofit2.Retrofit

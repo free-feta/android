@@ -1,4 +1,4 @@
-package et.fira.freefeta.data
+package et.fira.freefeta.data.config
 
 import et.fira.freefeta.model.AppConfig
 import kotlinx.coroutines.flow.Flow

@@ -1,4 +1,4 @@
-package et.fira.freefeta.data
+package et.fira.freefeta.data.file
 
 import android.os.Environment
 import et.fira.freefeta.network.TeleFileDownloaderService

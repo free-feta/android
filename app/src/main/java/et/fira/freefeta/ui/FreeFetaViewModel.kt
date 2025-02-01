@@ -8,9 +8,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import et.fira.freefeta.FreeFetaApplication
-import et.fira.freefeta.data.FileDownloaderRepository
-import et.fira.freefeta.data.LocalFileRepository
-import et.fira.freefeta.data.RemoteFileRepository
+import et.fira.freefeta.data.file.FileDownloaderRepository
+import et.fira.freefeta.data.file.LocalFileRepository
+import et.fira.freefeta.data.file.RemoteFileRepository
 import et.fira.freefeta.data.ThemeMode
 import et.fira.freefeta.data.UserPreferencesRepository
 import et.fira.freefeta.model.FileEntity

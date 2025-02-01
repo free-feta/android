@@ -5,6 +5,9 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import et.fira.freefeta.data.ad.AdDao
+import et.fira.freefeta.data.config.AppConfigDao
+import et.fira.freefeta.data.file.FileDao
 import et.fira.freefeta.model.Advertisement
 import et.fira.freefeta.model.AppConfig
 import et.fira.freefeta.model.FileEntity

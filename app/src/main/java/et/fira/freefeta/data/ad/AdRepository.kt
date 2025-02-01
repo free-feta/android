@@ -1,4 +1,4 @@
-package et.fira.freefeta.data
+package et.fira.freefeta.data.ad
 
 import et.fira.freefeta.model.Advertisement
 import kotlinx.coroutines.flow.Flow
