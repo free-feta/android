@@ -13,8 +13,10 @@ import et.fira.freefeta.model.Media
 import kotlinx.coroutines.launch
 
 class FreeFetaViewModel(
-    private val videoFileDownloaderRepository: FileDownloaderRepository,
-    private val mediaRepository: MediaRepository
+    private val fileDownloaderRepository: FileDownloaderRepository,
+    private val localFileRepository: LocalFileRepository,
+    private val remoteFileRepository: RemoteFileRepository,
+    private val userPreferencesRepository: UserPreferencesRepository
 ): ViewModel() {
 
     init {
