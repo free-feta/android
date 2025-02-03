@@ -28,4 +28,6 @@ interface LocalFileRepository {
      * Update media in the data source
      */
     suspend fun updateFile(fileEntity: FileEntity)
+
+    suspend fun updateFileDownloadId(fileId: Int, newFileDownloadId: Int)
 }

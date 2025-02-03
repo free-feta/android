@@ -17,6 +17,9 @@ interface FileDao {
     @Update
     suspend fun update(fileEntity: FileEntity)
 
+    @Query("UPDATE files SET download_id = :newFileDownloadId WHERE id = :fileId")
+    suspend fun updateFileDownloadId(fileId: Int, newFileDownloadId: Int)
+
     @Delete
     suspend fun delete(fileEntity: FileEntity)
 
@@ -25,5 +28,7 @@ interface FileDao {
 
     @Query("SELECT * from files ORDER BY created_at DESC")
     fun getAllFiles(): Flow<List<FileEntity>>
+
+
 
 }
