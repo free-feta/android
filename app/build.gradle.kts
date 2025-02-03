@@ -80,6 +80,9 @@ dependencies {
     // Compose animation
     implementation ("androidx.compose.animation:animation:1.7.7")
 
+    // Compose navigation
+    implementation("androidx.navigation:navigation-compose:2.8.6")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
