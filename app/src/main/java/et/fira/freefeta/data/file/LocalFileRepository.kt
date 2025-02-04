@@ -5,27 +5,32 @@ import kotlinx.coroutines.flow.Flow
 
 interface LocalFileRepository {
     /**
-     * Retrieve all the medias from the the given data source.
+     * Retrieve all the files as flow from the the given data source.
      */
     fun getAllFilesStream(): Flow<List<FileEntity>>
 
     /**
-     * Retrieve an media from the given data source that matches with the [id].
+     * Retrieve all the files from the the given data source.
+     */
+    suspend fun getAllFiles(): List<FileEntity>
+
+    /**
+     * Retrieve an file from the given data source that matches with the [id].
      */
     fun getFileStream(id: Int): Flow<FileEntity?>
 
     /**
-     * Insert media in the data source
+     * Insert file in the data source
      */
     suspend fun insertFile(fileEntity: FileEntity)
 
     /**
-     * Delete media from the data source
+     * Delete file from the data source
      */
     suspend fun deleteFile(fileEntity: FileEntity)
 
     /**
-     * Update media in the data source
+     * Update file in the data source
      */
     suspend fun updateFile(fileEntity: FileEntity)
 
