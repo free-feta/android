@@ -83,6 +83,9 @@ dependencies {
     // Compose navigation
     implementation("androidx.navigation:navigation-compose:2.8.6")
 
+    // Window size
+    implementation("androidx.compose.material3:material3-window-size-class")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
