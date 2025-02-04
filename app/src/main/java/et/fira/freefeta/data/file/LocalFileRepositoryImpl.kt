@@ -6,15 +6,16 @@ import kotlinx.coroutines.flow.Flow
 class LocalFileRepositoryImpl(
     private val fileDao: FileDao
 ): LocalFileRepository {
-    override fun getAllFilesStream(): Flow<List<FileEntity>> = fileDao.getAllFiles()
+    override fun getAllFilesStream(): Flow<List<FileEntity>> = fileDao.getAllFilesFlow()
+    override suspend fun getAllFiles(): List<FileEntity> = fileDao.getAllFiles()
 
     override fun getFileStream(id: Int): Flow<FileEntity?> = fileDao.getFile(id)
 
-    override suspend fun insertFile(fileEntity: FileEntity) = fileDao.insert(fileEntity)
+    override suspend fun insertFile(fileEntity: FileEntity) = fileDao.insertFile(fileEntity)
 
-    override suspend fun deleteFile(fileEntity: FileEntity) = fileDao.delete(fileEntity)
+    override suspend fun deleteFile(fileEntity: FileEntity) = fileDao.deleteFile(fileEntity)
 
-    override suspend fun updateFile(fileEntity: FileEntity) = fileDao.update(fileEntity)
+    override suspend fun updateFile(fileEntity: FileEntity) = fileDao.updateFile(fileEntity)
     override suspend fun updateFileDownloadId(fileId: Int, newFileDownloadId: Int) = fileDao.updateFileDownloadId(fileId, newFileDownloadId)
 
 }
