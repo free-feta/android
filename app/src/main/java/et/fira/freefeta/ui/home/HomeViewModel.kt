@@ -22,13 +22,20 @@ class HomeViewModel(
 ): ViewModel() {
     init {
         viewModelScope.launch {
-           val fileList =  remoteFileRepository.getFiles()
-            if (fileList.isNotEmpty()) {
-                for (file in fileList) {
-                    localFileRepository.insertFile(file)
-                }
+           val fetchedFiles =  remoteFileRepository.getFiles()
+            // Get Stored files from db and
+            // set downloadId to null to all FileEntity to compare with
+            // fetchedFiles as it has no downloadId
+            val storedFiles = localFileRepository.getAllFiles().map { it.copy(downloadId = null) }
+            val newFiles = fetchedFiles.filter { fetchedFile ->
+                storedFiles.none { storedFile -> fetchedFile == storedFile }
             }
-            Log.d("HomeViewModel", "inserted ${fileList.count()} files")
+            for (file in newFiles) {
+                localFileRepository.insertFile(file)
+            }
+            Log.d("HomeViewModel", "inserted ${newFiles.count()} files")
+//            Log.d("HomeViewModel", storedFiles.toString())
+//            Log.d("HomeViewModel", fetchedFiles.toString())
         }
     }
     private val filesFlow: Flow<List<FileEntity>> = localFileRepository.getAllFilesStream()
@@ -59,10 +66,6 @@ data class HomeUiState(
     val downloadItemList: List<DownloadItem> = listOf()
 )
 
-//data class HomeUiState(
-//    val files: List<FileEntity> = listOf(),
-//    val downloadModels: List<DownloadModel> = listOf()
-//)
 
 data class DownloadItem(
     val file: FileEntity,
