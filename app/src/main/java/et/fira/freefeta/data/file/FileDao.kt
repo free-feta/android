@@ -12,22 +12,25 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface FileDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(fileEntity: FileEntity)
+    suspend fun insertFile(fileEntity: FileEntity)
 
     @Update
-    suspend fun update(fileEntity: FileEntity)
+    suspend fun updateFile(fileEntity: FileEntity)
 
     @Query("UPDATE files SET download_id = :newFileDownloadId WHERE id = :fileId")
     suspend fun updateFileDownloadId(fileId: Int, newFileDownloadId: Int)
 
     @Delete
-    suspend fun delete(fileEntity: FileEntity)
+    suspend fun deleteFile(fileEntity: FileEntity)
 
     @Query("SELECT * from files WHERE id = :id")
     fun getFile(id: Int): Flow<FileEntity>
 
     @Query("SELECT * from files ORDER BY created_at DESC")
-    fun getAllFiles(): Flow<List<FileEntity>>
+    suspend fun getAllFiles(): List<FileEntity>
+
+    @Query("SELECT * from files ORDER BY created_at DESC")
+    fun getAllFilesFlow(): Flow<List<FileEntity>>
 
 
 
