@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,6 +26,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,6 +35,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.PermanentDrawerSheet
+import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -53,7 +58,8 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
-import kotlin.reflect.KFunction2
+import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.CoroutineScope
 
 object HomeDestination: NavigationDestination {
     override val route = "home"
@@ -65,12 +71,11 @@ fun HomeScreen(
     navigateToSettings: () -> Unit,
     navigateToAbout: () -> Unit,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
     NavDrawer(
-        onSettingsClick = navigateToSettings,
-        onAboutClick = navigateToAbout,
+        navigateToSettings = navigateToSettings,
+        navigateToAbout = navigateToAbout,
         isLargeScreen = false
     ) {
         HomeBody(
@@ -155,68 +160,22 @@ fun DownloadView(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavDrawer(
-    onSettingsClick: () -> Unit,
-    onAboutClick: () -> Unit,
+    navigateToSettings: () -> Unit,
+    navigateToAbout: () -> Unit,
     isLargeScreen: Boolean,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    ModalNavigationDrawer(
-        drawerContent = {
-            ModalDrawerSheet {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = dimensionResource(R.dimen.padding_medium))
-                        .verticalScroll(rememberScrollState())
-                ) {
-//                    Spacer(Modifier.height(8.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.End,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        IconButton(
-                            onClick = {
-                                scope.launch {
-                                    drawerState.close()
-                                }
-                            }
-                        ) {
-                            Icon(Icons.Default.Close, "Close")
-                        }
-                    }
-                    NavigationDrawerItem(
-                        label = { Text("Home") },
-                        icon = { Icon(Icons.Default.Home, null) },
-                        selected = true,
-                        onClick = {
-                            scope.launch { drawerState.close() }
-                        }
-                    )
-                    NavigationDrawerItem(
-                        label = { Text("Settings") },
-                        icon = { Icon(Icons.Default.Settings, null)},
-                        selected = false,
-                        onClick = {
-                            onSettingsClick()
-                            scope.launch { drawerState.close() }
-                        }
-                    )
-                    NavigationDrawerItem(
-                        label = { Text("About") },
-                        icon = { Icon(Icons.Default.Info, null)},
-                        selected = false,
-                        onClick = {
-                            onAboutClick()
-                            scope.launch { drawerState.close() }
-                        }
-                    )
-                }
-            }
-        },
+
+    ModalOrPermanentNavDrawer(
+        navigateToSettings = navigateToSettings,
+        navigateToAbout = navigateToAbout,
+        isLargeScreen = isLargeScreen,
         drawerState = drawerState,
-        gesturesEnabled = true
+        scope = scope,
+        modifier = Modifier,
     ) {
         Scaffold(
             topBar = {
@@ -229,18 +188,20 @@ fun NavDrawer(
                         }
                     },
                     navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                scope.launch {
-                                    if (drawerState.isOpen) {
-                                        drawerState.close()
-                                    } else {
-                                        drawerState.open()
+                        if (!isLargeScreen){
+                            IconButton(
+                                onClick = {
+                                    scope.launch {
+                                        if (drawerState.isOpen) {
+                                            drawerState.close()
+                                        } else {
+                                            drawerState.open()
+                                        }
                                     }
                                 }
+                            ) {
+                                Icon(Icons.Default.Menu, "Menu")
                             }
-                        ) {
-                            Icon(Icons.Default.Menu, "Menu")
                         }
                     }
                 )
@@ -251,14 +212,129 @@ fun NavDrawer(
     }
 }
 
-@Preview(showBackground = true)
+@Composable
+fun ModalOrPermanentNavDrawer(
+    navigateToSettings: () -> Unit,
+    navigateToAbout: () -> Unit,
+    isLargeScreen: Boolean,
+    drawerState: DrawerState,
+    scope: CoroutineScope,
+    modifier: Modifier,
+    content: @Composable () -> Unit,
+) {
+    if (isLargeScreen){
+        PermanentNavigationDrawer(
+            drawerContent = {
+                PermanentDrawerSheet {
+                    DrawerItems(
+                        isLargeScreen = true,
+                        onSettingsClick = { navigateToSettings() },
+                        onAboutClick = { navigateToAbout() },
+                        onCloseBtnClick = {},
+                        onHomeClick = { }
+                    )
+                }
+            },
+//        drawerState = drawerState,
+//        gesturesEnabled = true
+        ) { content() }
+    } else {
+        ModalNavigationDrawer(
+            drawerContent = {
+                ModalDrawerSheet {
+                    DrawerItems(
+                        isLargeScreen = false,
+                        onSettingsClick = {
+                            scope.launch {
+                                navigateToSettings()
+                                drawerState.close()
+                            }
+
+                                          },
+                        onAboutClick = {
+                            scope.launch {
+                                navigateToAbout()
+                                drawerState.close()
+                            }
+
+                                       },
+                        onCloseBtnClick = {
+                            scope.launch {
+                                drawerState.close()
+                            }
+                        },
+                        onHomeClick = {
+                            scope.launch {
+                                drawerState.close()
+                            }
+                        }
+                    )
+                }
+            },
+        drawerState = drawerState,
+        gesturesEnabled = true
+        ) { content() }
+    }
+}
+
+@Composable
+fun DrawerItems(
+    onHomeClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onAboutClick: () -> Unit,
+    onCloseBtnClick: () -> Unit,
+    isLargeScreen: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
+            .verticalScroll(rememberScrollState())
+    ) {
+        if (!isLargeScreen){
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                IconButton(
+                    onClick = onCloseBtnClick
+                ) {
+                    Icon(Icons.Default.Close, "Close")
+                }
+            }
+        } else {
+            Spacer(Modifier.height(16.dp))
+        }
+        NavigationDrawerItem(
+            label = { Text("Home") },
+            icon = { Icon(Icons.Default.Home, null) },
+            selected = true,
+            onClick = onHomeClick
+        )
+        NavigationDrawerItem(
+            label = { Text("Settings") },
+            icon = { Icon(Icons.Default.Settings, null)},
+            selected = false,
+            onClick = onSettingsClick
+        )
+        NavigationDrawerItem(
+            label = { Text("About") },
+            icon = { Icon(Icons.Default.Info, null)},
+            selected = false,
+            onClick = onAboutClick
+        )
+    }
+}
+
+@Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,dpi=240")
 @Composable
 fun NavDrawerPreview() {
     FreeFetaTheme {
         NavDrawer(
             {},
             {},
-            false
-        ) { }
+            false,
+            {},
+        )
     }
 }
