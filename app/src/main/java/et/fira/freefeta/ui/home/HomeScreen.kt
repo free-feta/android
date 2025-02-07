@@ -3,87 +3,69 @@ package et.fira.freefeta.ui.home
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.DrawerState
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.PermanentDrawerSheet
-import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import et.fira.freefeta.R
+import et.fira.freefeta.ui.AppDestinations
 import et.fira.freefeta.ui.AppViewModelProvider
 import et.fira.freefeta.ui.navigation.NavigationDestination
 import et.fira.freefeta.ui.theme.FreeFetaTheme
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
 
 object HomeDestination: NavigationDestination {
     override val route = "home"
-    override val titleRes = R.string.app_name
+    override val titleRes = R.string.home_screen_title
 }
 
 @Composable
 fun HomeScreen(
-    navigateToSettings: () -> Unit,
-    navigateToAbout: () -> Unit,
+    navigateTo: (String) -> Unit,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    windowSize: WindowWidthSizeClass,
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    NavDrawer(
-        navigateToSettings = navigateToSettings,
-        navigateToAbout = navigateToAbout,
-        isLargeScreen = false
-    ) {
-        HomeBody(
-            downloadItemList = uiState.downloadItemList,
-            downloadFile = viewModel::downloadFile,
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = it
-        )
+    Scaffold { contentPadding ->
+        Surface(
+            modifier = Modifier.padding(contentPadding)
+        ) {
+            NavDrawer(
+                navigateTo = navigateTo,
+            ) {
+                HomeBody(
+                    downloadItemList = uiState.downloadItemList,
+                    downloadFile = viewModel::downloadFile,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+        }
     }
 }
 
@@ -91,18 +73,13 @@ fun HomeScreen(
 fun HomeBody(
     downloadItemList: List<DownloadItem>,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues,
     downloadFile: (Int, String) -> Unit,
 ) {
-    Surface(
-        modifier.padding(contentPadding)
-    ) {
-        DownloadList(
-            listItem = downloadItemList,
-            downloadFile= downloadFile,
-            modifier = Modifier.fillMaxSize()
-        )
-    }
+    DownloadList(
+        listItem = downloadItemList,
+        downloadFile= downloadFile,
+        modifier = Modifier.fillMaxSize()
+    )
 }
 
 @Composable
@@ -157,183 +134,46 @@ fun DownloadView(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavDrawer(
-    navigateToSettings: () -> Unit,
-    navigateToAbout: () -> Unit,
-    isLargeScreen: Boolean,
-    content: @Composable (PaddingValues) -> Unit,
+    navigateTo: (String) -> Unit,
+    content: @Composable () -> Unit,
 ) {
-    val drawerState = rememberDrawerState(DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-
-
-    ModalOrPermanentNavDrawer(
-        navigateToSettings = navigateToSettings,
-        navigateToAbout = navigateToAbout,
-        isLargeScreen = isLargeScreen,
-        drawerState = drawerState,
-        scope = scope,
-        modifier = Modifier,
-    ) {
-        Scaffold(
-            topBar = {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Free", style = MaterialTheme.typography.displayMedium)
-                            Icon(Icons.Default.PlayArrow, null, tint = MaterialTheme.colorScheme.primaryContainer)
-                            Text("Feta", style = MaterialTheme.typography.displayMedium)
-                        }
+    val adaptiveInfo = currentWindowAdaptiveInfo()
+    val customNavSuiteType = with(adaptiveInfo) {
+        when(windowSizeClass.windowWidthSizeClass) {
+            androidx.window.core.layout.WindowWidthSizeClass.EXPANDED -> NavigationSuiteType.NavigationDrawer
+            androidx.window.core.layout.WindowWidthSizeClass.MEDIUM -> NavigationSuiteType.NavigationRail
+            else -> NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(adaptiveInfo)
+        }
+    }
+    NavigationSuiteScaffold(
+        navigationSuiteItems = {
+            AppDestinations.entries.forEach {
+                item(
+                    icon = {
+                        Icon(it.icon, null)
                     },
-                    navigationIcon = {
-                        if (!isLargeScreen){
-                            IconButton(
-                                onClick = {
-                                    scope.launch {
-                                        if (drawerState.isOpen) {
-                                            drawerState.close()
-                                        } else {
-                                            drawerState.open()
-                                        }
-                                    }
-                                }
-                            ) {
-                                Icon(Icons.Default.Menu, "Menu")
-                            }
-                        }
+                    label = { Text(stringResource(it.destination.titleRes)) },
+                    selected = it == AppDestinations.HOME,
+                    onClick = {
+                        navigateTo(it.destination.route)
                     }
                 )
             }
-        ) { innerPadding ->
-            content(innerPadding)
-        }
-    }
-}
-
-@Composable
-fun ModalOrPermanentNavDrawer(
-    navigateToSettings: () -> Unit,
-    navigateToAbout: () -> Unit,
-    isLargeScreen: Boolean,
-    drawerState: DrawerState,
-    scope: CoroutineScope,
-    modifier: Modifier,
-    content: @Composable () -> Unit,
-) {
-    if (isLargeScreen){
-        PermanentNavigationDrawer(
-            drawerContent = {
-                PermanentDrawerSheet {
-                    DrawerItems(
-                        isLargeScreen = true,
-                        onSettingsClick = { navigateToSettings() },
-                        onAboutClick = { navigateToAbout() },
-                        onCloseBtnClick = {},
-                        onHomeClick = { }
-                    )
-                }
-            },
-//        drawerState = drawerState,
-//        gesturesEnabled = true
-        ) { content() }
-    } else {
-        ModalNavigationDrawer(
-            drawerContent = {
-                ModalDrawerSheet {
-                    DrawerItems(
-                        isLargeScreen = false,
-                        onSettingsClick = {
-                            scope.launch {
-                                navigateToSettings()
-                                drawerState.close()
-                            }
-
-                                          },
-                        onAboutClick = {
-                            scope.launch {
-                                navigateToAbout()
-                                drawerState.close()
-                            }
-
-                                       },
-                        onCloseBtnClick = {
-                            scope.launch {
-                                drawerState.close()
-                            }
-                        },
-                        onHomeClick = {
-                            scope.launch {
-                                drawerState.close()
-                            }
-                        }
-                    )
-                }
-            },
-        drawerState = drawerState,
-        gesturesEnabled = true
-        ) { content() }
-    }
-}
-
-@Composable
-fun DrawerItems(
-    onHomeClick: () -> Unit,
-    onSettingsClick: () -> Unit,
-    onAboutClick: () -> Unit,
-    onCloseBtnClick: () -> Unit,
-    isLargeScreen: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .padding(horizontal = dimensionResource(R.dimen.padding_medium))
-            .verticalScroll(rememberScrollState())
+        },
+        layoutType = customNavSuiteType
     ) {
-        if (!isLargeScreen){
-            Row(
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                IconButton(
-                    onClick = onCloseBtnClick
-                ) {
-                    Icon(Icons.Default.Close, "Close")
-                }
-            }
-        } else {
-            Spacer(Modifier.height(16.dp))
-        }
-        NavigationDrawerItem(
-            label = { Text("Home") },
-            icon = { Icon(Icons.Default.Home, null) },
-            selected = true,
-            onClick = onHomeClick
-        )
-        NavigationDrawerItem(
-            label = { Text("Settings") },
-            icon = { Icon(Icons.Default.Settings, null)},
-            selected = false,
-            onClick = onSettingsClick
-        )
-        NavigationDrawerItem(
-            label = { Text("About") },
-            icon = { Icon(Icons.Default.Info, null)},
-            selected = false,
-            onClick = onAboutClick
-        )
+        content()
     }
 }
 
-@Preview(showBackground = true, device = "spec:width=1280dp,height=800dp,dpi=240")
+@Preview(showBackground = true, device = "spec:width=411dp,height=891dp")
 @Composable
 fun NavDrawerPreview() {
     FreeFetaTheme {
         NavDrawer(
             {},
-            {},
-            false,
             {},
         )
     }
