@@ -1,21 +1,35 @@
 package et.fira.freefeta.ui
 
-import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import et.fira.freefeta.ui.about.AboutDestination
+import et.fira.freefeta.ui.home.HomeDestination
 import et.fira.freefeta.ui.navigation.FreeFetaNavHost
+import et.fira.freefeta.ui.navigation.NavigationDestination
+import et.fira.freefeta.ui.settings.SettingsDestination
 import et.fira.freefeta.ui.theme.FreeFetaTheme
 
+enum class AppDestinations(
+    val destination: NavigationDestination,
+    val icon: ImageVector
+) {
+    HOME(HomeDestination, Icons.Default.Home),
+    SETTINGS(SettingsDestination, Icons.Default.Settings),
+    About(AboutDestination, Icons.Default.Info)
+}
+
 @Composable
-fun FreeFetaApp(navController: NavHostController = rememberNavController()) {
+fun FreeFetaApp(
+    navController: NavHostController = rememberNavController(),
+    windowSize: WindowWidthSizeClass
+) {
 //    val themeMode = freeFetaViewModel.themeMode.collectAsState()
 //    val isDarkTheme: Boolean = when(themeMode.value) {
 //        ThemeMode.LIGHT -> false
@@ -23,6 +37,10 @@ fun FreeFetaApp(navController: NavHostController = rememberNavController()) {
 //        ThemeMode.SYSTEM -> isSystemInDarkTheme()
 //    }
     FreeFetaTheme() {
-        FreeFetaNavHost(navController = navController)
+        FreeFetaNavHost(
+            navController = navController,
+            windowSize = windowSize
+        )
     }
 }
+
