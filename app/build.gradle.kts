@@ -41,6 +41,9 @@ android {
 }
 
 dependencies {
+    // Adaptive navigation suite
+    implementation(libs.material3.adaptive.navigation.suite)
+
     val roomVersion = "2.6.1"
 
     implementation(libs.androidx.core.ktx)
@@ -85,6 +88,7 @@ dependencies {
 
     // Window size
     implementation("androidx.compose.material3:material3-window-size-class")
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
