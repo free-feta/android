@@ -1,5 +1,6 @@
 package et.fira.freefeta.ui.navigation
 
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -17,7 +18,8 @@ import et.fira.freefeta.ui.settings.SettingsScreen
 @Composable
 fun FreeFetaNavHost(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    windowSize: WindowWidthSizeClass
 ) {
     NavHost(
         navController = navController,
@@ -26,8 +28,8 @@ fun FreeFetaNavHost(
     ) {
         composable(route = HomeDestination.route) {
             HomeScreen(
-                navigateToSettings = {navController.navigate(SettingsDestination.route)},
-                navigateToAbout = {navController.navigate(AboutDestination.route)}
+                navigateTo = navController::navigate,
+                windowSize = windowSize
             )
         }
         composable(route = PlayerDestination.route) {
