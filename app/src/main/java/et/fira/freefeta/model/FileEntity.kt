@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import et.fira.freefeta.R
 
 @Entity(tableName = "files")
 data class FileEntity(
@@ -64,3 +65,25 @@ enum class MediaType {
     PODCAST,
     DOCUMENTARY
 }
+
+val FileEntity.icon: Int
+    get() = if (mediaType != null) {
+        when(mediaType){
+            MediaType.MOVIE -> R.drawable.file_movie
+            MediaType.SERIES -> R.drawable.file_series
+            MediaType.MUSIC -> R.drawable.file_music
+            MediaType.PODCAST -> R.drawable.file_podcast
+            MediaType.DOCUMENTARY -> R.drawable.file_documentary
+            else -> R.drawable.file_unknown
+        }
+    } else {
+        when(fileType) {
+            FileType.VIDEO -> R.drawable.file_video
+            FileType.AUDIO -> R.drawable.file_audio
+            FileType.IMAGE -> R.drawable.file_image
+            FileType.DOCUMENT -> R.drawable.file_document
+            FileType.APK -> R.drawable.file_apk
+            FileType.COMPRESSED -> R.drawable.file_compressed
+            else -> R.drawable.file_unknown
+        }
+    }
