@@ -4,4 +4,12 @@
     <string name="player_screen_title">Player</string>
     <string name="settings_screen_title">Settings</string>
     <string name="about_screen_title">About</string>
+    <string name="badge_new">New</string>
+    <string name="download">Download</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="pause">Pause</string>
+    <string name="play">Play</string>
+    <string name="retry">Retry</string>
+    <string name="resume">Resume</string>
 </resources>
