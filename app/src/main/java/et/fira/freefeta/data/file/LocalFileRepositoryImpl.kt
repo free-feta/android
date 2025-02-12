@@ -16,6 +16,6 @@ class LocalFileRepositoryImpl(
     override suspend fun deleteFile(fileEntity: FileEntity) = fileDao.deleteFile(fileEntity)
 
     override suspend fun updateFile(fileEntity: FileEntity) = fileDao.updateFile(fileEntity)
-    override suspend fun updateFileDownloadId(fileId: Int, newFileDownloadId: Int) = fileDao.updateFileDownloadId(fileId, newFileDownloadId)
+    override suspend fun updateFileDownloadId(fileId: Int, newFileDownloadId: Int?) = fileDao.updateFileDownloadId(fileId, newFileDownloadId)
 
 }
