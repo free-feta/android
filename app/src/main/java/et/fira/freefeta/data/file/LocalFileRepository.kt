@@ -34,5 +34,5 @@ interface LocalFileRepository {
      */
     suspend fun updateFile(fileEntity: FileEntity)
 
-    suspend fun updateFileDownloadId(fileId: Int, newFileDownloadId: Int)
+    suspend fun updateFileDownloadId(fileId: Int, newFileDownloadId: Int?)
 }
