@@ -100,3 +100,148 @@ object Util {
     }
 
 }
+
+fun Context.hasFilePermission(): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        Environment.isExternalStorageManager()
+    } else {
+        val readPermission = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        ) == PermissionChecker.PERMISSION_GRANTED
+
+        val writePermission = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PermissionChecker.PERMISSION_GRANTED
+
+        readPermission && writePermission
+    }
+}
+
+
+fun createAndCheckFolderLegacy(context: Context, folderName: String): Boolean {
+    try {
+        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        val appFolder = File(downloadsDir, folderName)
+
+        // Check if folder exists
+        if (!appFolder.exists()) {
+            // Create folder if it doesn't exist
+            val success = appFolder.mkdirs()
+            if (!success) {
+                return false
+            }
+        }
+
+        // Verify folder exists and is a directory
+        return appFolder.exists() && appFolder.isDirectory
+
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return false
+    }
+}
+
+//@RequiresApi(Build.VERSION_CODES.Q)
+//fun createAndCheckFolderApi29(context: Context, folderName: String): Boolean {
+//    try {
+//        val relativePath = Environment.DIRECTORY_DOWNLOADS + File.separator + folderName
+//
+//        // Create folder using MediaStore
+//        val values = ContentValues().apply {
+//            put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
+//            put(MediaStore.MediaColumns.DISPLAY_NAME, ".nomedia")
+//            put(MediaStore.MediaColumns.MIME_TYPE, "application/octet-stream")
+//        }
+//
+//        context.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+//
+//        // Verify folder exists
+//        val folder = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), folderName)
+//        return folder.exists() && folder.isDirectory
+//
+//    } catch (e: Exception) {
+//        e.printStackTrace()
+//        return false
+//    }
+//}
+
+@RequiresApi(Build.VERSION_CODES.Q)
+fun createAndCheckFolderApi29(context: Context, folderName: String): Boolean {
+    return try {
+        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        val targetFolder = File(downloadsDir, folderName)
+
+        // First check if folder exists in filesystem
+        if (!targetFolder.exists() || !targetFolder.isDirectory) {
+            // Create through MediaStore only if it doesn't exist
+            createFolderViaMediaStore(context, folderName)
+        }
+
+        // Double-check existence
+        targetFolder.exists() && targetFolder.isDirectory
+    } catch (e: Exception) {
+        e.printStackTrace()
+        false
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.Q)
+private fun createFolderViaMediaStore(context: Context, folderName: String) {
+    val relativePath = "${Environment.DIRECTORY_DOWNLOADS}/$folderName"
+
+    // Check if .nomedia file already exists in MediaStore
+    if (!doesNomediaFileExist(context, relativePath)) {
+        val values = ContentValues().apply {
+            put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath)
+            put(MediaStore.MediaColumns.DISPLAY_NAME, ".nomedia")
+            put(MediaStore.MediaColumns.MIME_TYPE, "application/octet-stream")
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
+        }
+
+        val uri = context.contentResolver.insert(
+            MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+            values
+        )
+
+        // Mark as complete if successfully created
+        uri?.let {
+            values.clear()
+            values.put(MediaStore.MediaColumns.IS_PENDING, 0)
+            context.contentResolver.update(uri, values, null, null)
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.Q)
+private fun doesNomediaFileExist(context: Context, relativePath: String): Boolean {
+    val projection = arrayOf(MediaStore.MediaColumns._ID)
+    val selection = """
+        ${MediaStore.MediaColumns.RELATIVE_PATH} = ? 
+        AND ${MediaStore.MediaColumns.DISPLAY_NAME} = ?
+    """.trimIndent()
+
+    val selectionArgs = arrayOf(relativePath, ".nomedia")
+
+    return context.contentResolver.query(
+        MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+        projection,
+        selection,
+        selectionArgs,
+        null
+    )?.use { cursor ->
+        cursor.count > 0
+    } ?: false
+}
+
+// Combined approach for all Android versions
+fun createAndCheckFolderCompat(context: Context, folderName: String = AppConstants.File.DOWNLOAD_FOLDER_NAME): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        createAndCheckFolderApi29(context, folderName)
+    } else {
+        createAndCheckFolderLegacy(context, folderName)
+    }
+}
+
+fun Context.createAndCheckFolder(folderName: String = AppConstants.File.DOWNLOAD_FOLDER_NAME): Boolean = createAndCheckFolderCompat(this, folderName)
