@@ -34,9 +34,6 @@ class TeleFileDownloaderService(
             } else {
                 URLUtil.guessFileName(url, null, null)
             }
-        } else {
-            fileName
-        }
         return ketch.download(
             url = url,
             path = path,
