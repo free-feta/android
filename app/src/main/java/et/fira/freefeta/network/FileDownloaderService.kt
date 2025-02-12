@@ -28,8 +28,8 @@ class TeleFileDownloaderService(
             headers
         }
 
-        val finalFileName = if (fileName == null) {
-            if (uri.host == "telebirrchat.ethiomobilemoney.et") {
+        val finalFileName = fileName
+            ?: if (uri.host == "telebirrchat.ethiomobilemoney.et") {
                 uri.getQueryParameter("filename") ?: "video.mp4"
             } else {
                 URLUtil.guessFileName(url, null, null)
