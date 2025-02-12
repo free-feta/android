@@ -19,6 +19,16 @@ class FileDownloaderRepository(
         )
     }
 
+    fun cancelDownload(id: Int) = teleFileDownloaderService.cancel(id)
+
+    fun pauseDownload(id: Int) = teleFileDownloaderService.pause(id)
+
+    fun retryDownload(id: Int) = teleFileDownloaderService.retry(id)
+
+    fun deleteDownload(id: Int) = teleFileDownloaderService.delete(id)
+
+    fun resumeDownload(id: Int) = teleFileDownloaderService.resume(id)
+
     fun observeDownloads(): Flow<List<DownloadModel>> {
         return teleFileDownloaderService.observeDownloads()
     }
