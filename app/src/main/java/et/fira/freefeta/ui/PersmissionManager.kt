@@ -22,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.permissions.*
-import et.fira.freefeta.hasFilePermission
+import et.fira.freefeta.util.hasFilePermission
 
 @Composable
 fun FilePermissionHandler(
