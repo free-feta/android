@@ -1,29 +1,16 @@
-package et.fira.freefeta
+package et.fira.freefeta.util
 
 import android.Manifest
+import android.content.ContentValues
 import android.content.Context
 import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
-
-fun Context.hasFilePermission(): Boolean {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        Environment.isExternalStorageManager()
-    } else {
-        val readPermission = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        ) == PermissionChecker.PERMISSION_GRANTED
-
-        val writePermission = ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        ) == PermissionChecker.PERMISSION_GRANTED
-
-        readPermission && writePermission
-    }
-}
+import java.io.File
 
 object Util {
 
@@ -35,7 +22,7 @@ object Util {
     private const val VALUE_1024 = 1024
     private const val SEC_IN_MILLIS = 1000
 
-    private fun getTimeLeftText(
+    fun getTimeLeftText(
         speedInBPerMs: Float,
         progressPercent: Int,
         lengthInBytes: Long
@@ -65,9 +52,9 @@ object Util {
         }
     }
 
-    private fun getSpeedText(speedInBPerMs: Float): String {
+    fun getSpeedText(speedInBPerMs: Float): String {
         var value = speedInBPerMs * SEC_IN_MILLIS
-        val units = arrayOf("b/s", "kb/s", "mb/s", "gb/s")
+        val units = arrayOf("B/s", "KB/s", "MB/s", "GB/s")
         var unitIndex = 0
 
         while (value >= VALUE_500 && unitIndex < units.size - 1) {
@@ -80,7 +67,7 @@ object Util {
 
     fun getTotalLengthText(lengthInBytes: Long): String {
         var value = lengthInBytes.toFloat()
-        val units = arrayOf("b", "kb", "mb", "gb")
+        val units = arrayOf("B", "KB", "MB", "GB")
         var unitIndex = 0
 
         while (value >= VALUE_500 && unitIndex < units.size - 1) {
