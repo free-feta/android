@@ -3,6 +3,7 @@ package et.fira.freefeta.data
 import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
@@ -29,8 +30,22 @@ class UserPreferencesRepository(
             }
         }
 
+    val showDeleteDialog: Flow<Boolean> = dataStore.data
+        .catch {
+            if(it is IOException) {
+                Log.e(TAG, "Error reading preferences.", it)
+                emit(emptyPreferences())
+            } else {
+                throw it
+            }
+        }
+        .map { preferences ->
+            preferences[SHOW_DELETE_DIALOG] ?: true
+        }
+
     companion object {
         val THEME_MODE_KEY = intPreferencesKey("theme_mode")
+        val SHOW_DELETE_DIALOG = booleanPreferencesKey("show_dialog")
         const val TAG = "UserPreferencesRepo"
     }
 
@@ -38,6 +53,12 @@ class UserPreferencesRepository(
         dataStore.edit {
                 preferences ->
             preferences[THEME_MODE_KEY] = themeMode.ordinal
+        }
+    }
+
+    suspend fun setShowDeleteDialog(show: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[SHOW_DELETE_DIALOG] = show
         }
     }
 }
