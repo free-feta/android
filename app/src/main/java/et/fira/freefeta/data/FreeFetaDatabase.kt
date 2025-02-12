@@ -12,7 +12,7 @@ import et.fira.freefeta.model.Advertisement
 import et.fira.freefeta.model.AppConfig
 import et.fira.freefeta.model.FileEntity
 
-@Database(entities = [FileEntity::class, AppConfig::class, Advertisement::class], version = 4, exportSchema = false)
+@Database(entities = [FileEntity::class, AppConfig::class, Advertisement::class], version = 8, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class FreeFetaDatabase: RoomDatabase() {
     abstract fun fileDao(): FileDao
