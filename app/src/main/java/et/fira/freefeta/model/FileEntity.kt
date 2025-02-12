@@ -24,6 +24,7 @@ data class FileEntity(
     val mediaType: MediaType? = null, // Needs converter and registration to DB
 
     val name: String,
+    val size: String? = null,
 
     @SerializedName(value = "download_url")
     @ColumnInfo(name = "download_url")
