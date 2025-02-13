@@ -73,7 +73,7 @@ class DefaultAppContainer(context: Context): AppContainer {
         AppConfigRepositoryImpl(FreeFetaDatabase.getDatabase(context).appConfigDao())
     }
     override val adRepository: AdRepository by lazy {
-        AdRepositoryImpl(FreeFetaDatabase.getDatabase(context).adDao())
+        AdRepositoryImpl(FreeFetaDatabase.getDatabase(context).adDao(), freeFetaApiService = retrofitService)
     }
     override val userPreferencesRepository: UserPreferencesRepository by lazy {
         UserPreferencesRepository(context.dataStore)
