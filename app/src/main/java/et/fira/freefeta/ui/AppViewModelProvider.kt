@@ -28,7 +28,9 @@ object AppViewModelProvider {
                 fileDownloaderRepository = freeFetaApplication().container.fileDownloaderRepository,
                 localFileRepository = freeFetaApplication().container.localFileRepository,
                 remoteFileRepository = freeFetaApplication().container.remoteFileRepository,
-                userPreferencesRepository = freeFetaApplication().container.userPreferencesRepository
+                userPreferencesRepository = freeFetaApplication().container.userPreferencesRepository,
+                adRepository = freeFetaApplication().container.adRepository
+
             )
         }
     }
