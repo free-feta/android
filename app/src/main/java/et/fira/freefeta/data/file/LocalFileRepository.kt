@@ -25,6 +25,11 @@ interface LocalFileRepository {
     suspend fun insertFile(fileEntity: FileEntity)
 
     /**
+     * Insert list of life into the data source
+     */
+    suspend fun insertFile(fileEntities: List<FileEntity>)
+
+    /**
      * Delete file from the data source
      */
     suspend fun deleteFile(fileEntity: FileEntity)
