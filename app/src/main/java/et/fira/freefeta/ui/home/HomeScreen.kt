@@ -1,5 +1,6 @@
 package et.fira.freefeta.ui.home
 
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
@@ -36,7 +37,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -79,7 +79,9 @@ import et.fira.freefeta.model.FileEntity
 import et.fira.freefeta.model.icon
 import et.fira.freefeta.ui.AppDestinations
 import et.fira.freefeta.ui.AppViewModelProvider
+import et.fira.freefeta.ui.ad.AdDialog
 import et.fira.freefeta.ui.navigation.NavigationDestination
+import et.fira.freefeta.ui.player.PlayerDestination
 import et.fira.freefeta.ui.theme.FreeFetaTheme
 import kotlinx.coroutines.launch
 import kotlin.reflect.KSuspendFunction0
@@ -97,6 +99,7 @@ fun HomeScreen(
     windowSize: WindowWidthSizeClass,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val adState by viewModel.adState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -116,9 +119,17 @@ fun HomeScreen(
             )
         }
     ) { contentPadding ->
-        Surface(
+        Column(
             modifier = Modifier.padding(contentPadding)
         ) {
+            if (adState.showAd) {
+                AdDialog(
+                    ad = adState.ad,
+                    dismissAction = adState.dismissAction,
+                    navigate = navigateTo,
+                    resetAdState = viewModel::resetAdState
+                )
+            }
             NavDrawer(
                 navigateTo = navigateTo,
             ) {
@@ -137,6 +148,7 @@ fun HomeScreen(
                                },
                     fetchNewFiles = viewModel::fetchNewFiles,
                     showDeleteDialog = viewModel.showDialog.value,
+                    navigateTo = navigateTo,
                     modifier = Modifier.fillMaxSize(),
                 )
             }
@@ -150,6 +162,7 @@ fun HomeBody(
     onAction: (DownloadAction, FileEntity, DownloadModel?, neverShowAgain: Boolean?) -> Unit,
     fetchNewFiles: KSuspendFunction0<Int>,
     showDeleteDialog: Boolean,
+    navigateTo: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     DownloadList(
@@ -157,6 +170,7 @@ fun HomeBody(
         onAction = onAction,
         fetchNewFiles = fetchNewFiles,
         showDeleteDialog = showDeleteDialog,
+        navigateTo = navigateTo,
         modifier = modifier.fillMaxSize()
     )
 }
@@ -168,6 +182,7 @@ fun DownloadList(
     onAction: (DownloadAction, FileEntity, DownloadModel?, neverShowAgain: Boolean?) -> Unit,
     fetchNewFiles: KSuspendFunction0<Int>,
     showDeleteDialog: Boolean,
+    navigateTo: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
@@ -192,7 +207,9 @@ fun DownloadList(
         modifier = modifier
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp),
         ) {
             groupedDownloadItemList.forEach { (type, itemList) ->
                 stickyHeader {
@@ -215,7 +232,10 @@ fun DownloadList(
                         downloadItem = it,
                         onAction = onAction,
                         showDeleteDialog = showDeleteDialog,
-                        modifier = Modifier.fillMaxWidth().animateItem()
+                        navigateTo = navigateTo,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .animateItem()
                     )
                 }
             }
@@ -230,6 +250,7 @@ fun DownloadView(
     downloadItem: DownloadItem,
     onAction: (DownloadAction, FileEntity, DownloadModel?, neverShowAgain: Boolean?) -> Unit,
     showDeleteDialog: Boolean,
+    navigateTo: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val alpha = remember { Animatable(0f) }
@@ -272,6 +293,7 @@ fun DownloadView(
                         file = downloadItem.file,
                         downloadModel = downloadItem.downloadModel,
                         onAction = onAction,
+                        navigateTo = navigateTo,
                         modifier = Modifier
                     )
 
@@ -388,6 +410,7 @@ fun FileInfoView(
     file: FileEntity,
     downloadModel: DownloadModel?,
     onAction: (DownloadAction, FileEntity, DownloadModel?, neverShowAgain: Boolean?) -> Unit,
+    navigateTo: (String) -> Unit,
     modifier: Modifier,
 ) {
     Row(
@@ -460,6 +483,7 @@ fun FileInfoView(
                 file = file,
                 downloadModel = downloadModel,
                 onAction = onAction,
+                navigateTo = navigateTo,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -472,6 +496,7 @@ fun FileActionView(
     file: FileEntity,
     downloadModel: DownloadModel?,
     onAction: (DownloadAction, FileEntity, DownloadModel?, neverShowAgain: Boolean?) -> Unit,
+    navigateTo: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -531,7 +556,8 @@ fun FileActionView(
                         iconRes = R.drawable.play_icon,
                         contentDescription = stringResource(R.string.play),
                         tint = MaterialTheme.colorScheme.primary,
-                        onClick = {}
+                        onClick = {onAction(DownloadAction.PLAY, file, downloadModel, null)
+                        }
                     )
                 }
             }
@@ -724,6 +750,7 @@ fun DownloadViewPreview() {
             ),
             onAction = {a, i, d, l, ->},
             showDeleteDialog = false,
+            navigateTo = {},
 //            modifier = Modifier.fillMaxWidth()
         )
     }
