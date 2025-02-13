@@ -12,14 +12,19 @@ data class Advertisement (
 
     @ColumnInfo(name = "is_one_time")
     @SerializedName(value = "is_one_time")
-    val isOneTime: Boolean,
+    val isOneTime: Boolean = false,
 
     @ColumnInfo(name = "show_on_startup")
     @SerializedName(value = "show_on_startup")
-    val showOnStartup: Boolean,
+    val showOnStartup: Boolean = false,
+
+    @ColumnInfo(name = "is_html")
+    @SerializedName(value = "is_html")
+    val isHtml: Boolean = false,
 
     val title: String? = null,
     val body: String,
+    val url: String? = null,
     val duration: Int = 3
 
 )
