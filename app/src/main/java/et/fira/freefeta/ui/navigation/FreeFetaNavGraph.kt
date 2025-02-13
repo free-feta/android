@@ -1,8 +1,11 @@
 package et.fira.freefeta.ui.navigation
 
+import android.net.Uri
+import androidx.annotation.OptIn
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,6 +18,7 @@ import et.fira.freefeta.ui.player.PlayerScreen
 import et.fira.freefeta.ui.settings.SettingsDestination
 import et.fira.freefeta.ui.settings.SettingsScreen
 
+@OptIn(UnstableApi::class)
 @Composable
 fun FreeFetaNavHost(
     navController: NavHostController,
@@ -32,10 +36,11 @@ fun FreeFetaNavHost(
                 windowSize = windowSize
             )
         }
-        composable(route = PlayerDestination.route) {
+        composable(route = "${PlayerDestination.route}/{${PlayerDestination.arg}}") { backStackEntry ->
+            val filePath = Uri.decode(backStackEntry.arguments?.getString(PlayerDestination.arg) ?: "")
             PlayerScreen(
-                navController = navController
-            )
+                filePath = filePath,
+            ) { navController.popBackStack() }
         }
         composable(route = SettingsDestination.route) {
             SettingsScreen(
