@@ -12,6 +12,7 @@ class LocalFileRepositoryImpl(
     override fun getFileStream(id: Int): Flow<FileEntity?> = fileDao.getFile(id)
 
     override suspend fun insertFile(fileEntity: FileEntity) = fileDao.insertFile(fileEntity)
+    override suspend fun insertFile(fileEntities: List<FileEntity>) = fileDao.insertFile(fileEntities)
 
     override suspend fun deleteFile(fileEntity: FileEntity) = fileDao.deleteFile(fileEntity)
 
