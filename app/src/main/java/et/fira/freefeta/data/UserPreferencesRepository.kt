@@ -45,7 +45,7 @@ class UserPreferencesRepository(
 
     companion object {
         val THEME_MODE_KEY = intPreferencesKey("theme_mode")
-        val SHOW_DELETE_DIALOG = booleanPreferencesKey("show_dialog")
+        val SHOW_DELETE_DIALOG = booleanPreferencesKey("show_delete_dialog")
         const val TAG = "UserPreferencesRepo"
     }
 
