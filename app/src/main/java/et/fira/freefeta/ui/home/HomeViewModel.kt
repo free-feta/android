@@ -20,9 +20,11 @@ import androidx.lifecycle.viewModelScope
 import com.ketch.DownloadModel
 import com.ketch.Status
 import et.fira.freefeta.data.UserPreferencesRepository
+import et.fira.freefeta.data.ad.AdRepository
 import et.fira.freefeta.data.file.FileDownloaderRepository
 import et.fira.freefeta.data.file.LocalFileRepository
 import et.fira.freefeta.data.file.RemoteFileRepository
+import et.fira.freefeta.model.Advertisement
 import et.fira.freefeta.model.FileEntity
 import et.fira.freefeta.util.AppConstants
 import et.fira.freefeta.util.createAndCheckFolder
@@ -30,8 +32,10 @@ import et.fira.freefeta.util.hasFilePermission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
@@ -41,18 +45,29 @@ import java.io.File
 import kotlin.coroutines.coroutineContext
 
 enum class DownloadAction {
-    CANCEL, PAUSE, RETRY, RESUME, DOWNLOAD, OPEN, OPEN_FOLDER, DELETE_REQUEST, CONFIRM_DELETE, DISMISS_DELETE
+    CANCEL, PAUSE, RETRY, RESUME, DOWNLOAD, OPEN, OPEN_FOLDER, DELETE_REQUEST, CONFIRM_DELETE, DISMISS_DELETE, PLAY
 }
 
 class HomeViewModel(
     private val fileDownloaderRepository: FileDownloaderRepository,
     private val localFileRepository: LocalFileRepository,
     private val remoteFileRepository: RemoteFileRepository,
-    private val userPreferencesRepository: UserPreferencesRepository
+    private val userPreferencesRepository: UserPreferencesRepository,
+    private val adRepository: AdRepository
 ): ViewModel() {
     init {
-
+        viewModelScope.launch {
+            val startUpAd = adRepository.getStartUpAd()
+            if (startUpAd != null) {
+                _adState.value = AdState(
+                    ad = startUpAd,
+                    showAd = true,
+                    dismissAction = AdDismissAction.GotoHome
+                )
+            }
+        }
     }
+
     private val filesFlow: Flow<List<FileEntity>> = localFileRepository.getAllFilesStream()
     private val downloadModelsFlow: Flow<List<DownloadModel>> = fileDownloaderRepository.observeDownloads()
 
@@ -67,6 +82,9 @@ class HomeViewModel(
         SharingStarted.Lazily,
         HomeUiState()
     )
+
+    private val _adState = MutableStateFlow(AdState(dismissAction = AdDismissAction.GotoHome))
+    val adState: StateFlow<AdState> = _adState.asStateFlow()
 
     private val _showDialog = mutableStateOf(false)
     val showDialog: State<Boolean> = _showDialog
@@ -103,6 +121,8 @@ class HomeViewModel(
         currentDeleteFileInfo = null // Clear on dismiss
     }
 
+
+
     fun fetchNewFilesAndNotify(context: Context? = null) {
         viewModelScope.launch {
             val newFiles = fetchNewFiles()
@@ -113,6 +133,28 @@ class HomeViewModel(
             }
         }
 
+    }
+
+    private fun loadOnDemandAd(encodedFilePath: String) {
+        viewModelScope.launch {
+            val ad = adRepository.getOnDemandAd()
+            if (ad != null) {
+                _adState.value = AdState(
+                    ad = ad,
+                    showAd = true,
+                    dismissAction = AdDismissAction.PlayVideo(encodedFilePath)
+                )
+            } else {
+                _adState.value = AdState(
+                    showAd = true,
+                    dismissAction = AdDismissAction.PlayVideo(encodedFilePath)
+                )
+            }
+            }
+    }
+
+    fun resetAdState() {
+        _adState.value = AdState(dismissAction = AdDismissAction.GotoHome)
     }
 
     suspend  fun fetchNewFiles(): Int {
@@ -126,14 +168,15 @@ class HomeViewModel(
             val newFiles = fetchedFiles.filter { fetchedFile ->
                 storedFiles.none { storedFile -> fetchedFile == storedFile }
             }
-            for (file in newFiles) {
-                localFileRepository.insertFile(file)
+            if (newFiles.isNotEmpty()) {
+                localFileRepository.insertFile(newFiles)
             }
             Log.d("HomeViewModel", "Fetched ${newFiles.size} new files")
             return newFiles.size
 
         } catch (e: Exception) {
             coroutineContext.ensureActive()
+            e.printStackTrace()
         }
         return 0
     }
@@ -186,6 +229,7 @@ class HomeViewModel(
             DownloadAction.DELETE_REQUEST -> if (downloadModel != null && file != null) onDeleteRequest(file.id, downloadModel.id)
             DownloadAction.CONFIRM_DELETE -> if (neverShowAgain != null) confirmDelete(neverShowAgain)
             DownloadAction.DISMISS_DELETE -> dismissDialog()
+            DownloadAction.PLAY -> if (downloadModel != null) loadOnDemandAd(Uri.encode("${downloadModel.path}/${downloadModel.fileName}"))
         }
     }
 
@@ -308,3 +352,16 @@ data class DeleteFileInfo(
     val fileId: Int,
     val downloadId: Int
 )
+
+data class AdState(
+    val ad: Advertisement? = null,
+    val showAd: Boolean = false,
+    val dismissAction: AdDismissAction,
+)
+
+sealed class AdDismissAction {
+    data class PlayVideo(
+        val videoToPlayEncodedPath: String
+    ): AdDismissAction()
+    data object GotoHome: AdDismissAction()
+}
