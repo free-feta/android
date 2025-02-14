@@ -35,6 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -63,6 +64,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -79,11 +81,13 @@ import et.fira.freefeta.model.FileEntity
 import et.fira.freefeta.model.icon
 import et.fira.freefeta.ui.AppDestinations
 import et.fira.freefeta.ui.AppViewModelProvider
-import et.fira.freefeta.ui.ad.AdDialog
+import et.fira.freefeta.ui.FilePermissionHandler
+import et.fira.freefeta.ui.ad.AdViewModel
 import et.fira.freefeta.ui.navigation.NavigationDestination
 import et.fira.freefeta.ui.player.PlayerDestination
 import et.fira.freefeta.ui.theme.FreeFetaTheme
 import kotlinx.coroutines.launch
+import kotlin.reflect.KFunction1
 import kotlin.reflect.KSuspendFunction0
 
 object HomeDestination: NavigationDestination {
@@ -97,9 +101,9 @@ fun HomeScreen(
     navigateTo: (String) -> Unit,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
     windowSize: WindowWidthSizeClass,
+    adViewModel: AdViewModel,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val adState by viewModel.adState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -122,35 +126,72 @@ fun HomeScreen(
         Column(
             modifier = Modifier.padding(contentPadding)
         ) {
-            if (adState.showAd) {
-                AdDialog(
-                    ad = adState.ad,
-                    dismissAction = adState.dismissAction,
-                    navigate = navigateTo,
-                    resetAdState = viewModel::resetAdState
-                )
-            }
+            FilePermissionHandler()
             NavDrawer(
                 navigateTo = navigateTo,
             ) {
-                HomeBody(
-                    downloadItemList = uiState.downloadItemList.groupBy {
-                        it.file.mediaType?.name ?: it.file.fileType.name
-                    },
-                    onAction = { downloadAction: DownloadAction, file: FileEntity, downloadModel: DownloadModel?, neverShowAgain: Boolean? ->
-                        viewModel.downloadAction(
-                            context = context,
-                            downloadAction = downloadAction,
-                            file = file,
-                            downloadModel = downloadModel,
-                            neverShowAgain = neverShowAgain
-                        )
-                               },
-                    fetchNewFiles = viewModel::fetchNewFiles,
-                    showDeleteDialog = viewModel.showDialog.value,
-                    navigateTo = navigateTo,
-                    modifier = Modifier.fillMaxSize(),
-                )
+                if (uiState.downloadItemList.isNotEmpty()) {
+                    HomeBody(
+                        downloadItemList = uiState.downloadItemList.groupBy {
+                            it.file.mediaType?.name ?: it.file.fileType.name
+                        },
+                        onAction = viewModel::downloadAction,
+                        fetchNewFiles = viewModel::fetchNewFiles,
+                        showDeleteDialog = viewModel.showDialog.value,
+                        navigateTo = navigateTo,
+                        triggerAd = adViewModel::triggerAdBeforeAction,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    val coroutineScope = rememberCoroutineScope()
+                    Column {
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 32.dp)
+                        ) {
+                            Text(
+                                text = "No entries to show! \nInternet connection is needed to get file list once",
+                                textAlign = TextAlign.Center
+                            )
+                        }
+//                        Spacer(Modifier.height(8.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    coroutineScope.launch {
+                                        Toast.makeText(
+                                            context,
+                                            "Getting files, please wait",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        val newFiles = viewModel.fetchNewFiles()
+                                        if (newFiles > 0) {
+                                            Toast.makeText(
+                                                context,
+                                                "Fetched $newFiles new files",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else {
+                                            Toast.makeText(
+                                                context,
+                                                "Getting files failed, please make sure you're connected to internet",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                }
+                            ) {
+                                Text("Refresh")
+                            }
+                        }
+                    }
+                }
+
             }
         }
     }
@@ -159,11 +200,12 @@ fun HomeScreen(
 @Composable
 fun HomeBody(
     downloadItemList: Map<String, List<DownloadItem>>,
-    onAction: (DownloadAction, FileEntity, DownloadModel?, neverShowAgain: Boolean?) -> Unit,
+    onAction: (DownloadAction) -> Unit,
     fetchNewFiles: KSuspendFunction0<Int>,
     showDeleteDialog: Boolean,
     navigateTo: (String) -> Unit,
     modifier: Modifier = Modifier,
+    triggerAd: KFunction1<() -> Unit, Unit>,
 ) {
     DownloadList(
         groupedDownloadItemList = downloadItemList,
@@ -171,6 +213,7 @@ fun HomeBody(
         fetchNewFiles = fetchNewFiles,
         showDeleteDialog = showDeleteDialog,
         navigateTo = navigateTo,
+        triggerAd = triggerAd,
         modifier = modifier.fillMaxSize()
     )
 }
@@ -179,11 +222,12 @@ fun HomeBody(
 @Composable
 fun DownloadList(
     groupedDownloadItemList: Map<String, List<DownloadItem>>,
-    onAction: (DownloadAction, FileEntity, DownloadModel?, neverShowAgain: Boolean?) -> Unit,
+    onAction: (DownloadAction) -> Unit,
     fetchNewFiles: KSuspendFunction0<Int>,
     showDeleteDialog: Boolean,
     navigateTo: (String) -> Unit,
     modifier: Modifier = Modifier,
+    triggerAd: KFunction1<() -> Unit, Unit>,
 ) {
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
@@ -233,6 +277,7 @@ fun DownloadList(
                         onAction = onAction,
                         showDeleteDialog = showDeleteDialog,
                         navigateTo = navigateTo,
+                        triggerAd = triggerAd,
                         modifier = Modifier
                             .fillMaxWidth()
                             .animateItem()
@@ -248,10 +293,12 @@ fun DownloadList(
 @Composable
 fun DownloadView(
     downloadItem: DownloadItem,
-    onAction: (DownloadAction, FileEntity, DownloadModel?, neverShowAgain: Boolean?) -> Unit,
+    onAction: (DownloadAction) -> Unit,
     showDeleteDialog: Boolean,
     navigateTo: (String) -> Unit,
     modifier: Modifier = Modifier,
+    triggerAd: KFunction1<() -> Unit, Unit>,
+
 ) {
     val alpha = remember { Animatable(0f) }
 
@@ -269,14 +316,11 @@ fun DownloadView(
         if (showDeleteDialog) {
             DeleteConfirmationDialog(
                 onConfirm = { neverShow ->
-                    onAction(
-                        DownloadAction.CONFIRM_DELETE,
-                        downloadItem.file,
-                        downloadItem.downloadModel,
-                        neverShow
-                    )
+                    onAction( DownloadAction.ConfirmDelete(neverShow))
                 },
-                onDismiss = {onAction(DownloadAction.DISMISS_DELETE, downloadItem.file, downloadItem.downloadModel, null)}
+                onDismiss = {
+                    onAction(DownloadAction.DismissDelete)
+                }
 
             )
         }
@@ -294,6 +338,7 @@ fun DownloadView(
                         downloadModel = downloadItem.downloadModel,
                         onAction = onAction,
                         navigateTo = navigateTo,
+                        triggerAd = triggerAd,
                         modifier = Modifier
                     )
 
@@ -409,9 +454,11 @@ fun Badge(text: String) {
 fun FileInfoView(
     file: FileEntity,
     downloadModel: DownloadModel?,
-    onAction: (DownloadAction, FileEntity, DownloadModel?, neverShowAgain: Boolean?) -> Unit,
+    onAction: (DownloadAction) -> Unit,
     navigateTo: (String) -> Unit,
     modifier: Modifier,
+    triggerAd: KFunction1<() -> Unit, Unit>,
+
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -484,6 +531,7 @@ fun FileInfoView(
                 downloadModel = downloadModel,
                 onAction = onAction,
                 navigateTo = navigateTo,
+                triggerAd = triggerAd,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -495,10 +543,13 @@ fun FileInfoView(
 fun FileActionView(
     file: FileEntity,
     downloadModel: DownloadModel?,
-    onAction: (DownloadAction, FileEntity, DownloadModel?, neverShowAgain: Boolean?) -> Unit,
+    onAction: (DownloadAction) -> Unit,
     navigateTo: (String) -> Unit,
     modifier: Modifier = Modifier,
+    triggerAd: KFunction1<() -> Unit, Unit>,
+
 ) {
+    val context = LocalContext.current
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -511,18 +562,18 @@ fun FileActionView(
                 iconRes = R.drawable.download_icon,
                 contentDescription = stringResource(R.string.download),
                 tint = MaterialTheme.colorScheme.primary,
-                onClick = { onAction(DownloadAction.DOWNLOAD, file, null, null) },
+                onClick = { onAction(DownloadAction.Download(context, file)) },
             )
         } else {
             ActionIcon(
                 iconRes = R.drawable.delete_icon,
                 contentDescription = stringResource(R.string.delete),
                 tint = MaterialTheme.colorScheme.error,
-                onClick = { onAction(DownloadAction.DELETE_REQUEST, file, downloadModel, null) }
+                onClick = { onAction(DownloadAction.DeleteRequest(downloadModel, file)) }
             )
 
             val actions = remember(downloadModel.status) {
-                getActionsForStatus(downloadModel.status)
+                getActionsForStatus(downloadModel.status, downloadModel)
             }
 
             actions.forEach { action ->
@@ -530,8 +581,7 @@ fun FileActionView(
                     iconRes = action.iconRes,
                     contentDescription = stringResource(action.contentDescRes),
                     tint = action.tint ?: MaterialTheme.colorScheme.primary,
-                    onClick = {
-                        onAction(action.type, file, downloadModel, null) }
+                    onClick = { onAction(action.onClick) }
                 )
             }
 
@@ -541,14 +591,14 @@ fun FileActionView(
                     iconRes = R.drawable.folder_icon,
                     contentDescription = stringResource(R.string.open_in_folder),
                     tint = MaterialTheme.colorScheme.primary,
-                    onClick = {onAction(DownloadAction.OPEN_FOLDER, file, downloadModel, null)}
+                    onClick = {onAction(DownloadAction.OpenFolder(context))}
                 )
 
                 ActionIcon(
                     iconRes = R.drawable.external_icon,
                     contentDescription = stringResource(R.string.open_in_external_player),
                     tint = MaterialTheme.colorScheme.primary,
-                    onClick = {onAction(DownloadAction.OPEN, file, downloadModel, null)}
+                    onClick = {onAction(DownloadAction.Open(context, downloadModel))}
                 )
 
                 if (file.isPlayable) {
@@ -556,7 +606,16 @@ fun FileActionView(
                         iconRes = R.drawable.play_icon,
                         contentDescription = stringResource(R.string.play),
                         tint = MaterialTheme.colorScheme.primary,
-                        onClick = {onAction(DownloadAction.PLAY, file, downloadModel, null)
+                        onClick = {
+                            triggerAd {
+                                onAction(DownloadAction.Play(
+                                    onPlay = {
+                                        val encodedFilePath =
+                                            Uri.encode("${downloadModel.path}/${downloadModel.fileName}")
+                                        navigateTo("${PlayerDestination.route}/$encodedFilePath")
+                                    }
+                                ))
+                            }
                         }
                     )
                 }
@@ -565,6 +624,7 @@ fun FileActionView(
         }
     }
 }
+
 
 @Composable
 fun DeleteConfirmationDialog(
@@ -627,44 +687,44 @@ private fun ActionIcon(
     }
 }
 
-private fun getActionsForStatus(status: Status): List<FileAction> {
+private fun getActionsForStatus(status: Status, downloadModel: DownloadModel): List<FileAction> {
     return when (status) {
         Status.QUEUED, Status.STARTED, Status.PROGRESS -> listOf(
             FileAction(
                 iconRes = R.drawable.cancel_icon,
                 contentDescRes = R.string.cancel,
-                type = DownloadAction.CANCEL
+                onClick = DownloadAction.Cancel(downloadModel),
             ),
             FileAction(
                 iconRes = R.drawable.pause_icon,
                 contentDescRes = R.string.pause,
-                type = DownloadAction.PAUSE
+                onClick = DownloadAction.Pause(downloadModel)
             )
         )
         Status.CANCELLED -> listOf(
             FileAction(
                 iconRes = R.drawable.retry_icon,
                 contentDescRes = R.string.retry,
-                type = DownloadAction.RETRY
+                onClick = DownloadAction.Retry(downloadModel)
             )
         )
         Status.FAILED -> listOf(
             FileAction(
                 iconRes = R.drawable.cancel_icon,
                 contentDescRes = R.string.cancel,
-                type = DownloadAction.CANCEL
+                onClick = DownloadAction.Cancel(downloadModel)
             ),
             FileAction(
                 iconRes = R.drawable.retry_icon,
                 contentDescRes = R.string.retry,
-                type = DownloadAction.RETRY
+                onClick = DownloadAction.Retry(downloadModel)
             )
         )
         Status.PAUSED -> listOf(
             FileAction(
                 iconRes = R.drawable.resume_icon,
                 contentDescRes = R.string.resume,
-                type = DownloadAction.RESUME
+                onClick = DownloadAction.Resume(downloadModel)
             )
         )
         Status.SUCCESS, Status.DEFAULT -> emptyList()
@@ -748,9 +808,11 @@ fun DownloadViewPreview() {
                     failureReason = ""
                 ) else null
             ),
-            onAction = {a, i, d, l, ->},
+            onAction = {},
             showDeleteDialog = false,
             navigateTo = {},
+            triggerAd = { action: () -> Unit -> action() } as KFunction1<() -> Unit, Unit>,
+
 //            modifier = Modifier.fillMaxWidth()
         )
     }
@@ -759,6 +821,6 @@ fun DownloadViewPreview() {
 data class FileAction(
     val iconRes: Int,
     val contentDescRes: Int,
-    val type: DownloadAction,
-    val tint: Color? = null
+    val tint: Color? = null,
+    val onClick: DownloadAction
 )
