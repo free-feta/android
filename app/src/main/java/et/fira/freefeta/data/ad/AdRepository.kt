@@ -11,6 +11,7 @@ interface AdRepository {
     suspend fun insertAd(advertisement: Advertisement)
     suspend fun insertAd(advertisements: List<Advertisement>)
     suspend fun deleteAd(advertisement: Advertisement)
+    suspend fun deleteAd(advertisements: List<Advertisement>)
     fun getAd(id: Int): Flow<Advertisement>
     fun getAllAdsStream(): Flow<List<Advertisement>>
     suspend fun fetchRemoteAds(): List<Advertisement>
@@ -27,6 +28,8 @@ class AdRepositoryImpl(
     override suspend fun insertAd(advertisements: List<Advertisement>) = adDao.insert(advertisements)
 
     override suspend fun deleteAd(advertisement: Advertisement) = adDao.delete(advertisement)
+    override suspend fun deleteAd(advertisements: List<Advertisement>) = adDao.delete(advertisements)
+
     override fun getAd(id: Int): Flow<Advertisement> = adDao.getAd(id)
 
     override fun getAllAdsStream(): Flow<List<Advertisement>> = adDao.getAllAdsStream()
@@ -35,8 +38,25 @@ class AdRepositoryImpl(
     override suspend fun syncNewAds(): Int {
         try {
             val fetchedAds = fetchRemoteAds()
-            insertAd(fetchedAds)
-            return fetchedAds.size
+            val storedAds = adDao.getAllAds()
+
+            val allStoredConvertedExpiry = storedAds.map { it.copy(expired = false) }
+            val newAds = fetchedAds.filter { fetchedAd ->
+                allStoredConvertedExpiry.none { storedAd -> fetchedAd == storedAd }
+            }
+            if (newAds.isNotEmpty()) {
+                insertAd(newAds)
+            }
+
+            val garbageAds = allStoredConvertedExpiry.filter { storedAd ->
+                fetchedAds.none { fetchedAd -> storedAd == fetchedAd }
+            }
+
+            if (garbageAds.isNotEmpty()) {
+                deleteAd(garbageAds)
+            }
+
+            return newAds.size
         } catch (e: Exception) {
             coroutineContext.ensureActive()
             e.printStackTrace()
@@ -45,14 +65,13 @@ class AdRepositoryImpl(
     }
 
     override suspend fun getStartUpAd(): Advertisement? {
-        syncNewAds()
         try {
             val ads = adDao.getAllAds()
 //            Log.d("AdRepositoryImpl", "Ads filtered random: ${ads.filter { it.showOnStartup }.random()}")
-            val starUpAd = ads.filter { it.showOnStartup }.random()
+            val starUpAd = ads.filter { !it.expired && it.showOnStartup }.random()
 
             if (starUpAd.isOneTime) {
-                adDao.delete(starUpAd)
+                adDao.setExpired(starUpAd.id, true)
             }
             return starUpAd
         } catch (e: Exception) {
@@ -63,13 +82,12 @@ class AdRepositoryImpl(
     }
 
     override suspend fun getOnDemandAd(): Advertisement? {
-        syncNewAds()
         try {
             val ads = adDao.getAllAds()
             Log.d("AdRepositoryImpl", "Ads 4 on demand: $ads")
-            val onDemandAd = ads.filter { !it.showOnStartup }.random()
+            val onDemandAd = ads.filter { !it.expired && !it.showOnStartup }.random()
             if (onDemandAd.isOneTime) {
-                adDao.delete(onDemandAd)
+                adDao.setExpired(onDemandAd.id, true)
             }
             return onDemandAd
         } catch (e: Exception) {
