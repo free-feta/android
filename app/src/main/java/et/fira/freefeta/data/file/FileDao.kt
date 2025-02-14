@@ -26,6 +26,9 @@ interface FileDao {
     @Delete
     suspend fun deleteFile(fileEntity: FileEntity)
 
+    @Delete
+    suspend fun deleteFile(fileEntities: List<FileEntity>)
+
     @Query("SELECT * from files WHERE id = :id")
     fun getFile(id: Int): Flow<FileEntity>
 
