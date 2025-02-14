@@ -25,6 +25,7 @@ data class Advertisement (
     val title: String? = null,
     val body: String,
     val url: String? = null,
-    val duration: Int = 3
+    val duration: Int = 3,
+    val expired: Boolean = false,
 
 )
