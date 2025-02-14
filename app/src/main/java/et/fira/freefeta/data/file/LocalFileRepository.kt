@@ -33,6 +33,7 @@ interface LocalFileRepository {
      * Delete file from the data source
      */
     suspend fun deleteFile(fileEntity: FileEntity)
+    suspend fun deleteFile(fileEntities: List<FileEntity>)
 
     /**
      * Update file in the data source
