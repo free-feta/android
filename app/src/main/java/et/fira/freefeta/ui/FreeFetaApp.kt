@@ -7,8 +7,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import et.fira.freefeta.ui.about.AboutDestination
 import et.fira.freefeta.ui.home.HomeDestination
 import et.fira.freefeta.ui.navigation.FreeFetaNavHost
@@ -27,7 +25,6 @@ enum class AppDestinations(
 
 @Composable
 fun FreeFetaApp(
-    navController: NavHostController = rememberNavController(),
     windowSize: WindowWidthSizeClass
 ) {
 //    val themeMode = freeFetaViewModel.themeMode.collectAsState()
@@ -37,8 +34,8 @@ fun FreeFetaApp(
 //        ThemeMode.SYSTEM -> isSystemInDarkTheme()
 //    }
     FreeFetaTheme() {
+
         FreeFetaNavHost(
-            navController = navController,
             windowSize = windowSize
         )
     }
