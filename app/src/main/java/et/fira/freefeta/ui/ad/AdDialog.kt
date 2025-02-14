@@ -3,7 +3,6 @@ package et.fira.freefeta.ui.ad
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.webkit.WebView
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -33,7 +32,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -50,67 +48,40 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import et.fira.freefeta.R
 import et.fira.freefeta.model.Advertisement
-import et.fira.freefeta.ui.home.AdDismissAction
-import et.fira.freefeta.ui.home.HomeDestination
-import et.fira.freefeta.ui.player.PlayerDestination
 import et.fira.freefeta.ui.theme.FreeFetaTheme
 import kotlinx.coroutines.delay
 
 @Composable
 fun AdDialog(
-    ad: Advertisement?,
-    navigate: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    dismissAction: AdDismissAction,
-    resetAdState: () -> Unit,
+    ad: Advertisement,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    var readyToDismiss by remember { mutableStateOf(false) }
-    DisposableEffect(readyToDismiss) {
-        if (readyToDismiss) {
-            when (dismissAction) {
-                AdDismissAction.GotoHome -> resetAdState()
-                is AdDismissAction.PlayVideo -> {
-                    Log.d("AdDialog", "Navigating")
-                    navigate("${PlayerDestination.route}/${dismissAction.videoToPlayEncodedPath}")
-                }
-            }
-        }
-        onDispose {
-            if (readyToDismiss) {
-                Log.d("AdDialog", "Disposing")
-                resetAdState()
-            }
-        }
 
+    var countdown by remember { mutableIntStateOf(ad.duration) }
+    var isCountdownFinished by remember { mutableStateOf(false) }
 
+    // Countdown effect
+    LaunchedEffect(key1 = countdown) {
+        if (countdown > 0) {
+            delay(1000L) // 1 second delay
+            countdown--
+        } else {
+            isCountdownFinished = true
+        }
     }
-    LaunchedEffect(readyToDismiss) {
-        Log.d("AdDialog", "Inside LaunchedEffect")
 
-    }
-    if (ad != null) {
-        var countdown by remember { mutableIntStateOf(ad.duration) }
-        var isCountdownFinished by remember { mutableStateOf(false) }
-
-        // Countdown effect
-        LaunchedEffect(key1 = countdown) {
-            if (countdown > 0) {
-                delay(1000L) // 1 second delay
-                countdown--
-            } else {
-                isCountdownFinished = true
+    Dialog(
+        properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true),
+        onDismissRequest = {
+            if (isCountdownFinished) {
+                onDismiss()
             }
         }
-
-        Dialog(
-            onDismissRequest = {
-                if (isCountdownFinished) {
-                    readyToDismiss = true
-                }
-            }
-        ) {
+    ) {
         Card(
             shape = RoundedCornerShape(16.dp),
             modifier = modifier
@@ -130,7 +101,7 @@ fun AdDialog(
                         .padding(end = 8.dp),
                 ) {
                     Box(
-                        modifier =Modifier
+                        modifier = Modifier
                             .size(32.dp)
                             .border(
                                 width = 2.dp,
@@ -159,7 +130,7 @@ fun AdDialog(
                             } else {
                                 // Display Close Button
                                 IconButton(
-                                    onClick = { readyToDismiss = true }
+                                    onClick = onDismiss
                                 ) {
                                     Icon(
                                         Icons.Default.Close,
@@ -191,16 +162,17 @@ fun AdDialog(
                     )
                 }
 
-                 AnimatedVisibility(
-                     enter = scaleIn(),
-                     visible = isCountdownFinished) {
+                AnimatedVisibility(
+                    enter = scaleIn(),
+                    visible = isCountdownFinished
+                ) {
                     Row(
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Button(
-                            onClick = { readyToDismiss = true }
+                            onClick = onDismiss
                         ) {
                             Text(stringResource(R.string.close))
                         }
@@ -209,9 +181,6 @@ fun AdDialog(
             }
         }
 
-        }
-    } else {
-        readyToDismiss = true
     }
 }
 
@@ -266,13 +235,14 @@ fun HtmlAd(
 @Composable
 private fun AdDialogPreview() {
     FreeFetaTheme {
-        AdDialog(Advertisement(
-            id = 1,
-            isOneTime = false,
-            showOnStartup = false,
-            isHtml = true,
-            title = "This is my Ad",
-            body = """
+        AdDialog(
+            Advertisement(
+                id = 1,
+                isOneTime = false,
+                showOnStartup = false,
+                isHtml = true,
+                title = "This is my Ad",
+                body = """
         <html>
             <body>
                 <p>Visit <a href="https://t.me/fira_pro">Example</a></p>
@@ -280,12 +250,10 @@ private fun AdDialogPreview() {
             </body>
         </html>
     """.trimIndent(),
-            duration = 3
-        ),
-            dismissAction = AdDismissAction.GotoHome,
-            navigate = {},
-            resetAdState = {}
+                duration = 3
+            ),
+            onDismiss = {},
 
-        )
+            )
     }
 }
