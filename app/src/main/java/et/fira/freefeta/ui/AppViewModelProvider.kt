@@ -5,12 +5,19 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import et.fira.freefeta.FreeFetaApplication
+import et.fira.freefeta.ui.ad.AdViewModel
 import et.fira.freefeta.ui.home.HomeViewModel
 import et.fira.freefeta.ui.player.PlayerViewModel
 import et.fira.freefeta.ui.settings.SettingsViewModel
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
+        initializer {
+            AdViewModel(
+                adRepository = freeFetaApplication().container.adRepository
+            )
+        }
+
         initializer {
             SettingsViewModel(
                 userPreferencesRepository = freeFetaApplication().container.userPreferencesRepository
@@ -29,8 +36,6 @@ object AppViewModelProvider {
                 localFileRepository = freeFetaApplication().container.localFileRepository,
                 remoteFileRepository = freeFetaApplication().container.remoteFileRepository,
                 userPreferencesRepository = freeFetaApplication().container.userPreferencesRepository,
-                adRepository = freeFetaApplication().container.adRepository
-
             )
         }
     }
