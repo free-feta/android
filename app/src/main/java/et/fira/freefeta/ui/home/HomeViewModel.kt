@@ -44,8 +44,18 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.coroutines.coroutineContext
 
-enum class DownloadAction {
-    CANCEL, PAUSE, RETRY, RESUME, DOWNLOAD, OPEN, OPEN_FOLDER, DELETE_REQUEST, CONFIRM_DELETE, DISMISS_DELETE, PLAY
+sealed interface DownloadAction {
+    data class Cancel(var downloadModel: DownloadModel): DownloadAction
+    data class Pause(var downloadModel: DownloadModel): DownloadAction
+    data class Retry(var downloadModel: DownloadModel): DownloadAction
+    data class Resume(var downloadModel: DownloadModel): DownloadAction
+    data class Download(var context: Context, var file: FileEntity): DownloadAction
+    data class Open(var context: Context, var downloadModel: DownloadModel): DownloadAction
+    data class OpenFolder(var context: Context): DownloadAction
+    data class DeleteRequest(var downloadModel: DownloadModel, var file: FileEntity): DownloadAction
+    data class ConfirmDelete(var neverShowAgain: Boolean): DownloadAction
+    data object DismissDelete: DownloadAction
+    data class Play(var onPlay: () -> Unit): DownloadAction
 }
 
 class HomeViewModel(
@@ -53,21 +63,7 @@ class HomeViewModel(
     private val localFileRepository: LocalFileRepository,
     private val remoteFileRepository: RemoteFileRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
-    private val adRepository: AdRepository
 ): ViewModel() {
-    init {
-        viewModelScope.launch {
-            val startUpAd = adRepository.getStartUpAd()
-            if (startUpAd != null) {
-                _adState.value = AdState(
-                    ad = startUpAd,
-                    showAd = true,
-                    dismissAction = AdDismissAction.GotoHome
-                )
-            }
-        }
-    }
-
     private val filesFlow: Flow<List<FileEntity>> = localFileRepository.getAllFilesStream()
     private val downloadModelsFlow: Flow<List<DownloadModel>> = fileDownloaderRepository.observeDownloads()
 
@@ -83,13 +79,14 @@ class HomeViewModel(
         HomeUiState()
     )
 
-    private val _adState = MutableStateFlow(AdState(dismissAction = AdDismissAction.GotoHome))
-    val adState: StateFlow<AdState> = _adState.asStateFlow()
-
     private val _showDialog = mutableStateOf(false)
     val showDialog: State<Boolean> = _showDialog
 
     private var currentDeleteFileInfo: DeleteFileInfo? = null
+
+    init {
+
+    }
 
     private fun onDeleteRequest(fileId: Int, downloadId: Int) {
         currentDeleteFileInfo = DeleteFileInfo(fileId, downloadId)
@@ -121,8 +118,6 @@ class HomeViewModel(
         currentDeleteFileInfo = null // Clear on dismiss
     }
 
-
-
     fun fetchNewFilesAndNotify(context: Context? = null) {
         viewModelScope.launch {
             val newFiles = fetchNewFiles()
@@ -133,28 +128,6 @@ class HomeViewModel(
             }
         }
 
-    }
-
-    private fun loadOnDemandAd(encodedFilePath: String) {
-        viewModelScope.launch {
-            val ad = adRepository.getOnDemandAd()
-            if (ad != null) {
-                _adState.value = AdState(
-                    ad = ad,
-                    showAd = true,
-                    dismissAction = AdDismissAction.PlayVideo(encodedFilePath)
-                )
-            } else {
-                _adState.value = AdState(
-                    showAd = true,
-                    dismissAction = AdDismissAction.PlayVideo(encodedFilePath)
-                )
-            }
-            }
-    }
-
-    fun resetAdState() {
-        _adState.value = AdState(dismissAction = AdDismissAction.GotoHome)
     }
 
     suspend  fun fetchNewFiles(): Int {
@@ -170,6 +143,12 @@ class HomeViewModel(
             }
             if (newFiles.isNotEmpty()) {
                 localFileRepository.insertFile(newFiles)
+            }
+            val garbageFiles = storedFiles.filter { storedFile ->
+                fetchedFiles.none { fetchedFile -> fetchedFile == storedFile }
+            }
+            if (garbageFiles.isNotEmpty()) {
+                localFileRepository.deleteFile(garbageFiles)
             }
             Log.d("HomeViewModel", "Fetched ${newFiles.size} new files")
             return newFiles.size
@@ -212,24 +191,20 @@ class HomeViewModel(
     }
 
     fun downloadAction(
-        context: Context,
         downloadAction: DownloadAction,
-        file: FileEntity?,
-        downloadModel: DownloadModel?,
-        neverShowAgain: Boolean? = null
     ) {
         when(downloadAction) {
-            DownloadAction.CANCEL -> if (downloadModel != null) fileDownloaderRepository.cancelDownload(downloadModel.id)
-            DownloadAction.PAUSE -> if (downloadModel != null) fileDownloaderRepository.pauseDownload(downloadModel.id)
-            DownloadAction.RETRY -> if (downloadModel != null) fileDownloaderRepository.retryDownload(downloadModel.id)
-            DownloadAction.RESUME -> if (downloadModel != null) fileDownloaderRepository.resumeDownload(downloadModel.id)
-            DownloadAction.DOWNLOAD -> if (file != null) downloadFile(context, file)
-            DownloadAction.OPEN -> if (downloadModel != null) openFile(context, downloadModel)
-            DownloadAction.OPEN_FOLDER -> openFolder(context)
-            DownloadAction.DELETE_REQUEST -> if (downloadModel != null && file != null) onDeleteRequest(file.id, downloadModel.id)
-            DownloadAction.CONFIRM_DELETE -> if (neverShowAgain != null) confirmDelete(neverShowAgain)
-            DownloadAction.DISMISS_DELETE -> dismissDialog()
-            DownloadAction.PLAY -> if (downloadModel != null) loadOnDemandAd(Uri.encode("${downloadModel.path}/${downloadModel.fileName}"))
+            is DownloadAction.Cancel -> fileDownloaderRepository.cancelDownload(downloadAction.downloadModel.id)
+            is DownloadAction.Pause -> fileDownloaderRepository.pauseDownload(downloadAction.downloadModel.id)
+            is DownloadAction.Retry -> fileDownloaderRepository.retryDownload(downloadAction.downloadModel.id)
+            is DownloadAction.Resume -> fileDownloaderRepository.resumeDownload(downloadAction.downloadModel.id)
+            is DownloadAction.Download -> downloadFile(downloadAction.context, downloadAction.file)
+            is DownloadAction.Open -> openFile(downloadAction.context, downloadAction.downloadModel)
+            is DownloadAction.OpenFolder -> openFolder(downloadAction.context)
+            is DownloadAction.DeleteRequest -> onDeleteRequest(downloadAction.file.id, downloadAction.downloadModel.id)
+            is DownloadAction.ConfirmDelete -> confirmDelete(downloadAction.neverShowAgain)
+            is DownloadAction.DismissDelete -> dismissDialog()
+            is DownloadAction.Play -> downloadAction.onPlay()
         }
     }
 
@@ -342,7 +317,6 @@ data class HomeUiState(
     val downloadItemList: List<DownloadItem> = listOf()
 )
 
-
 data class DownloadItem(
     val file: FileEntity,
     val downloadModel: DownloadModel?,
@@ -352,16 +326,3 @@ data class DeleteFileInfo(
     val fileId: Int,
     val downloadId: Int
 )
-
-data class AdState(
-    val ad: Advertisement? = null,
-    val showAd: Boolean = false,
-    val dismissAction: AdDismissAction,
-)
-
-sealed class AdDismissAction {
-    data class PlayVideo(
-        val videoToPlayEncodedPath: String
-    ): AdDismissAction()
-    data object GotoHome: AdDismissAction()
-}
