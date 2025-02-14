@@ -23,7 +23,7 @@ interface AdDao {
     @Delete
     suspend fun delete(advertisement: Advertisement)
 
-      @Delete
+    @Delete
     suspend fun delete(advertisements: List<Advertisement>)
 
     @Query("SELECT * from advertisements WHERE id = :id")
@@ -34,4 +34,8 @@ interface AdDao {
 
     @Query("SELECT * from advertisements")
     suspend fun getAllAds(): List<Advertisement>
+
+    @Query("UPDATE advertisements SET expired = :expired WHERE id = :id")
+    suspend fun setExpired(id: Int, expired: Boolean)
+
 }
