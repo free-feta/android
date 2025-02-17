@@ -1,7 +1,12 @@
 package et.fira.freefeta.ui.home
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
@@ -30,6 +35,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,6 +53,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,6 +75,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
@@ -104,10 +112,35 @@ fun HomeScreen(
     adViewModel: AdViewModel,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val showDeleteDialog by viewModel.showDeleteDialog.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.fetchNewFilesAndNotify(context)
+    }
+
+
+    DisposableEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when {
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                }
+                else -> {
+                    permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        }
+
+        onDispose { }
     }
 
     Scaffold(
@@ -137,56 +170,68 @@ fun HomeScreen(
                         },
                         onAction = viewModel::downloadAction,
                         fetchNewFiles = viewModel::fetchNewFiles,
-                        showDeleteDialog = viewModel.showDialog.value,
+                        showDeleteDialog = showDeleteDialog,
                         navigateTo = navigateTo,
                         triggerAd = adViewModel::triggerAdBeforeAction,
                         modifier = Modifier.fillMaxSize(),
                     )
                 } else {
                     val coroutineScope = rememberCoroutineScope()
-                    Column {
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 32.dp)
-                        ) {
-                            Text(
-                                text = "No entries to show! \nInternet connection is needed to get file list once",
-                                textAlign = TextAlign.Center
-                            )
-                        }
-//                        Spacer(Modifier.height(8.dp))
-                        Row(
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            OutlinedButton(
-                                onClick = {
-                                    coroutineScope.launch {
-                                        Toast.makeText(
-                                            context,
-                                            "Getting files, please wait",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        val newFiles = viewModel.fetchNewFiles()
-                                        if (newFiles > 0) {
+                    val isLoading = remember { mutableStateOf(false) }
+
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        if (isLoading.value) {
+                            CircularProgressIndicator()
+                        } else {
+                            Row(
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = "No entries to show! \nInternet connection is needed to get file list once",
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                            Spacer(Modifier.height(16.dp))
+                            Row(
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                OutlinedButton(
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            isLoading.value = true
                                             Toast.makeText(
                                                 context,
-                                                "Fetched $newFiles new files",
+                                                "Getting files, please wait",
                                                 Toast.LENGTH_SHORT
                                             ).show()
-                                        } else {
-                                            Toast.makeText(
-                                                context,
-                                                "Getting files failed, please make sure you're connected to internet",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
+                                            val newFiles = viewModel.fetchNewFiles()
+                                            if (newFiles > 0) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Fetched $newFiles new files",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            } else {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Getting files failed, please make sure you're connected to internet",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                            isLoading.value = false
                                         }
                                     }
+                                ) {
+                                    Text("Refresh")
                                 }
-                            ) {
-                                Text("Refresh")
                             }
                         }
                     }
@@ -350,15 +395,16 @@ fun DownloadView(
                     }
 
                 }
-
-                Badge(stringResource(R.string.badge_new))
+                if (downloadItem.file.isNew) {
+                    Badge(stringResource(R.string.badge_new))
+                }
             }
             Spacer(Modifier.height(4.dp))
             Row(
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(end = 2.dp, bottom = 2.dp)
+                    .padding(start = 4.dp, end = 2.dp, bottom = 2.dp)
             ) {
                 Text(
                     text = if (downloadItem.downloadModel == null) {
@@ -386,7 +432,10 @@ fun DownloadView(
 }
 
 @Composable
-fun DownloadStatusView(downloadModel: DownloadModel, modifier: Modifier) {
+fun DownloadStatusView(
+    downloadModel: DownloadModel,
+    modifier: Modifier = Modifier
+) {
     val animatedProgress by animateFloatAsState(
         targetValue = downloadModel.progress.div(100f),
         animationSpec = ProgressIndicatorDefaults. ProgressAnimationSpec
@@ -682,7 +731,7 @@ private fun ActionIcon(
         Icon(
             painter = painterResource(iconRes),
             contentDescription = contentDescription,
-            tint = tint
+            tint = tint,
         )
     }
 }
