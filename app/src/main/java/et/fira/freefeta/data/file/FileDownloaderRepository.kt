@@ -32,6 +32,10 @@ class FileDownloaderRepository(
     fun observeDownloads(): Flow<List<DownloadModel>> {
         return teleFileDownloaderService.observeDownloads()
     }
+    fun observeDownload(id: Int): Flow<DownloadModel> {
+        return teleFileDownloaderService.observeDownloadById(id)
+    }
+
 
 
 }
