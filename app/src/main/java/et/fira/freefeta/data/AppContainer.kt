@@ -70,7 +70,10 @@ class DefaultAppContainer(context: Context): AppContainer {
         RemoteFileRepositoryImpl(retrofitService)
     }
     override val appConfigRepository: AppConfigRepository by lazy {
-        AppConfigRepositoryImpl(FreeFetaDatabase.getDatabase(context).appConfigDao())
+        AppConfigRepositoryImpl(
+            appConfigDao = FreeFetaDatabase.getDatabase(context).appConfigDao(),
+            freeFetaApiService = retrofitService
+        )
     }
     override val adRepository: AdRepository by lazy {
         AdRepositoryImpl(FreeFetaDatabase.getDatabase(context).adDao(), freeFetaApiService = retrofitService)
