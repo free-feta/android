@@ -20,7 +20,7 @@ interface FileDao {
     @Update
     suspend fun updateFile(fileEntity: FileEntity)
 
-    @Query("UPDATE files SET download_id = :newFileDownloadId WHERE id = :fileId")
+    @Query("UPDATE files SET download_id = :newFileDownloadId, is_new = 0 WHERE id = :fileId")
     suspend fun updateFileDownloadId(fileId: Int, newFileDownloadId: Int?)
 
     @Delete
