@@ -9,9 +9,17 @@ import et.fira.freefeta.ui.ad.AdViewModel
 import et.fira.freefeta.ui.home.HomeViewModel
 import et.fira.freefeta.ui.player.PlayerViewModel
 import et.fira.freefeta.ui.settings.SettingsViewModel
+import et.fira.freefeta.ui.update.UpdateViewModel
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
+        initializer {
+            UpdateViewModel(
+                configRepository = freeFetaApplication().container.appConfigRepository,
+                fileDownloaderRepository = freeFetaApplication().container.fileDownloaderRepository
+            )
+        }
+
         initializer {
             AdViewModel(
                 adRepository = freeFetaApplication().container.adRepository
