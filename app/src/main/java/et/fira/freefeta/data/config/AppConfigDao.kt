@@ -21,6 +21,9 @@ interface AppConfigDao {
     suspend fun delete(config: AppConfig)
 
     @Query("SELECT * from app_config WHERE id = 1")
-    fun getConfig(): Flow<AppConfig>
+    fun getConfigStream(): Flow<AppConfig?>
+
+    @Query("SELECT * from app_config WHERE id = 1")
+    fun getConfig(): AppConfig?
 
 }
