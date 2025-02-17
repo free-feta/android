@@ -7,11 +7,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
-import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.FileProvider
@@ -20,11 +20,9 @@ import androidx.lifecycle.viewModelScope
 import com.ketch.DownloadModel
 import com.ketch.Status
 import et.fira.freefeta.data.UserPreferencesRepository
-import et.fira.freefeta.data.ad.AdRepository
 import et.fira.freefeta.data.file.FileDownloaderRepository
 import et.fira.freefeta.data.file.LocalFileRepository
 import et.fira.freefeta.data.file.RemoteFileRepository
-import et.fira.freefeta.model.Advertisement
 import et.fira.freefeta.model.FileEntity
 import et.fira.freefeta.util.AppConstants
 import et.fira.freefeta.util.createAndCheckFolder
@@ -38,6 +36,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -79,23 +78,27 @@ class HomeViewModel(
         HomeUiState()
     )
 
-    private val _showDialog = mutableStateOf(false)
-    val showDialog: State<Boolean> = _showDialog
+    private val showDeleteDialogPreferenceState: MutableState<Boolean> = mutableStateOf(false)
+
+    private val _showDeleteDialog = MutableStateFlow(false)
+    val showDeleteDialog: StateFlow<Boolean> = _showDeleteDialog.asStateFlow()
 
     private var currentDeleteFileInfo: DeleteFileInfo? = null
 
     init {
-
+        viewModelScope.launch {
+            userPreferencesRepository.showDeleteDialog.collect {
+                showDeleteDialogPreferenceState.value = it
+            }
+        }
     }
 
     private fun onDeleteRequest(fileId: Int, downloadId: Int) {
         currentDeleteFileInfo = DeleteFileInfo(fileId, downloadId)
-        viewModelScope.launch {
-            if (userPreferencesRepository.showDeleteDialog.first()) {
-                _showDialog.value = true
-            } else {
-                deleteFileDownload(fileId, downloadId)
-            }
+        if (showDeleteDialogPreferenceState.value) {
+            _showDeleteDialog.value = true
+        } else {
+            deleteFileDownload(fileId, downloadId)
         }
     }
 
@@ -106,7 +109,7 @@ class HomeViewModel(
                     userPreferencesRepository.setShowDeleteDialog(false)
                 }
                 deleteFileDownload(deleteInfo.fileId, deleteInfo.downloadId)
-                _showDialog.value = false
+                _showDeleteDialog.value = false
                 currentDeleteFileInfo = null // Clear after deletion
             }
         }
@@ -114,7 +117,7 @@ class HomeViewModel(
 
 
     private fun dismissDialog() {
-        _showDialog.value = false
+        _showDeleteDialog.value = false
         currentDeleteFileInfo = null // Clear on dismiss
     }
 
@@ -232,18 +235,18 @@ class HomeViewModel(
 
         // 4. Get Content URI: Handle Null
         val contentUri: Uri = try {
-            if (Build.VERSION.SDK_INT >= 29) {
-                MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL).buildUpon()
-                    .appendPath(AppConstants.File.DOWNLOAD_FOLDER_NAME)
-                    .appendPath(downloadModel.fileName)
-                    .build()
-            } else {
+//            if (Build.VERSION.SDK_INT >= 29) {
+//                MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL).buildUpon()
+//                    .appendPath(AppConstants.File.DOWNLOAD_FOLDER_NAME)
+//                    .appendPath(downloadModel.fileName)
+//                    .build()
+//            } else {
                 FileProvider.getUriForFile(
                     context,
                     "${context.packageName}.provider", // Must match manifest declaration
                     file
                 )
-            }
+//            }
         } catch (e: IllegalArgumentException) {
             Toast.makeText(context, "File not accessible", Toast.LENGTH_SHORT).show()
             return
@@ -255,10 +258,10 @@ class HomeViewModel(
         // 6. Create Intent: Use apply for clarity
         val intent = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(contentUri, mimeType)
-            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
 
-        // 7. Start Activity: Handle Exceptions More Granularly
+        // 7. Start Activity: Handle Exceptions More Granularity
         try {
             context.startActivity(Intent.createChooser(intent, "Open with"))
         } catch (e: ActivityNotFoundException) {
@@ -305,8 +308,8 @@ class HomeViewModel(
 
     // 8. Helper Function for MIME Type
     private fun getMimeType(file: File): String? {
-        val extension = MimeTypeMap.getFileExtensionFromUrl(file.toString())
-        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.lowercase())
+        val extension = file.extension.lowercase() // Ensure lowercase for consistency
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
     }
 
 
