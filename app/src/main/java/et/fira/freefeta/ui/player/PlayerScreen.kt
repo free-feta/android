@@ -5,10 +5,9 @@ import android.content.pm.ActivityInfo
 import android.hardware.SensorManager
 import android.net.Uri
 import android.view.OrientationEventListener
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -27,8 +26,10 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.Tracks
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
@@ -88,8 +89,10 @@ fun PlayerScreen(
     var aspectRatio by rememberSaveable { mutableFloatStateOf(1f) }
     var originalOrientation by rememberSaveable { mutableIntStateOf(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) }
     var isReversedLandscape by rememberSaveable { mutableStateOf(false) }
-    // Track if the video is playing
+    // Track if the media is playing
     var isPlaying by remember { mutableStateOf(false) }
+    var isVideo by remember { mutableStateOf(false) } // Track if the media is video
+
 
 
     // Handle orientation changes
@@ -116,6 +119,13 @@ fun PlayerScreen(
         val listener = object : Player.Listener {
             override fun onVideoSizeChanged(videoSize: VideoSize) {
                 aspectRatio = videoSize.width.toFloat() / videoSize.height.toFloat()
+            }
+
+            override fun onTracksChanged(tracks: Tracks) {
+                // Check if the media contains video tracks
+                isVideo = tracks.groups.any { group ->
+                    group.type == C.TRACK_TYPE_VIDEO
+                }
             }
         }
 
@@ -163,16 +173,21 @@ fun PlayerScreen(
     }
 
     // Toggle system bars when playing/paused
-    LaunchedEffect(isPlaying) {
+    LaunchedEffect(isPlaying, isVideo) {
         val insetsController = WindowCompat.getInsetsController(window, view)
-        if (isPlaying) {
+        if (isPlaying && isVideo) {
             // Hide bars and enable transient behavior (swipe to show)
             insetsController.hide(WindowInsetsCompat.Type.systemBars())
             insetsController.systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            // Keep the screen on while playing
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
             // Show bars when paused
             insetsController.show(WindowInsetsCompat.Type.systemBars())
+
+            // Allow the screen to sleep when paused
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 
@@ -180,6 +195,7 @@ fun PlayerScreen(
     DisposableEffect(Unit) {
         onDispose {
             WindowCompat.getInsetsController(window, view).show(WindowInsetsCompat.Type.systemBars())
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 
@@ -195,7 +211,4 @@ fun PlayerScreen(
             modifier = Modifier.fillMaxSize()
         )
     }
-
-    // Player view
-
 }
