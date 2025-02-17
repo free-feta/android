@@ -1,6 +1,7 @@
 package et.fira.freefeta.network
 
 import et.fira.freefeta.model.Advertisement
+import et.fira.freefeta.model.AppConfig
 import et.fira.freefeta.model.FileEntity
 import retrofit2.http.GET
 
@@ -10,6 +11,9 @@ interface FreeFetaApiService {
 
     @GET("ads.json")
     suspend fun getAds(): List<Advertisement>
+
+    @GET("config.json")
+    suspend fun getConfig(): AppConfig
 }
 
 
