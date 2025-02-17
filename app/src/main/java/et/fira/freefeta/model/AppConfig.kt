@@ -20,11 +20,15 @@ data class AppConfig(
 
     @ColumnInfo(name = "version_description")
     @SerializedName(value = "version_description")
-    val versionDescription: String = "",
+    val versionDescription: String? = null,
 
     @ColumnInfo(name = "download_url")
     @SerializedName(value = "download_url")
     val downloadUrl: String,
+
+    @ColumnInfo(name = "alternative_url")
+    @SerializedName(value = "alternative_url")
+    val alternativeUrl: String? = null,
 
     @ColumnInfo(name = "is_service_ok")
     @SerializedName(value = "is_service_ok")
@@ -32,6 +36,6 @@ data class AppConfig(
 
     @ColumnInfo(name = "error_message")
     @SerializedName(value = "error_message")
-    val errorMessage: String?
+    val errorMessage: String? = null
 
 )
