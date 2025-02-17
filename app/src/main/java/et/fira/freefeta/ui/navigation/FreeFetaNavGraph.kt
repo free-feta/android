@@ -24,6 +24,7 @@ import et.fira.freefeta.ui.player.PlayerDestination
 import et.fira.freefeta.ui.player.PlayerScreen
 import et.fira.freefeta.ui.settings.SettingsDestination
 import et.fira.freefeta.ui.settings.SettingsScreen
+import et.fira.freefeta.ui.update.AppUpdateDialog
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -81,5 +82,7 @@ fun FreeFetaNavHost(
                 onDismiss = { adViewModel.onAdDismissed() }
             )
         }
+
+        AppUpdateDialog()
     }
 }
