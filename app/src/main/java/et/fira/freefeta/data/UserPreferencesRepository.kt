@@ -43,9 +43,23 @@ class UserPreferencesRepository(
             preferences[SHOW_DELETE_DIALOG] ?: true
         }
 
+    val onboardingCompleted: Flow<Boolean> = dataStore.data
+        .catch {
+            if(it is IOException) {
+                Log.e(TAG, "Error reading preferences.", it)
+                emit(emptyPreferences())
+            } else {
+                throw it
+            }
+        }
+        .map { preferences ->
+            preferences[ONBOARDING_COMPLETED] ?: false
+        }
+
     companion object {
         val THEME_MODE_KEY = intPreferencesKey("theme_mode")
         val SHOW_DELETE_DIALOG = booleanPreferencesKey("show_delete_dialog")
+        val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         const val TAG = "UserPreferencesRepo"
     }
 
@@ -59,6 +73,12 @@ class UserPreferencesRepository(
     suspend fun setShowDeleteDialog(show: Boolean) {
         dataStore.edit { preferences ->
             preferences[SHOW_DELETE_DIALOG] = show
+        }
+    }
+
+    suspend fun completeOnboarding() {
+        dataStore.edit { preferences ->
+            preferences[ONBOARDING_COMPLETED] = true
         }
     }
 }
