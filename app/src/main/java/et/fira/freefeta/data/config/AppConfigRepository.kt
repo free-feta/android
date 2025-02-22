@@ -11,7 +11,7 @@ interface AppConfigRepository {
     suspend fun insertConfig(config: AppConfig)
     suspend fun deleteConfig(config: AppConfig)
     fun getConfigStream(): Flow<AppConfig?>
-    suspend fun syncConfig()
+    suspend fun syncConfig(): AppConfig?
     suspend fun getConfig(): AppConfig?
     suspend fun getAnalyticsUrl(): String?
 }
@@ -25,18 +25,20 @@ class AppConfigRepositoryImpl(
     override suspend fun deleteConfig(config: AppConfig) = appConfigDao.delete(config)
 
     override fun getConfigStream(): Flow<AppConfig?> = appConfigDao.getConfigStream()
-    override suspend fun syncConfig() {
+    override suspend fun syncConfig(): AppConfig? {
         try {
             val fetchedConfig = freeFetaApiService.getConfig()
             Log.d("AppConfigRepository", "Fetched config: $fetchedConfig")
             insertConfig(fetchedConfig)
             Log.d("AppConfigRepository", "after insert in sync, thread: ${Thread.currentThread().name}")
+            return fetchedConfig
 
         } catch (e: Exception) {
             if (e is CancellationException) {
                 throw e
             }
             e.printStackTrace()
+            return null
         }
     }
     override suspend fun getConfig(): AppConfig? {
