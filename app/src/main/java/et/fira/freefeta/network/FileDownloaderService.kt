@@ -4,6 +4,7 @@ import android.net.Uri
 import android.webkit.URLUtil
 import com.ketch.DownloadModel
 import com.ketch.Ketch
+import et.fira.freefeta.util.AppConstants
 import kotlinx.coroutines.flow.Flow
 
 class TeleFileDownloaderService(
@@ -18,19 +19,14 @@ class TeleFileDownloaderService(
     ): Int {
         val uri = Uri.parse(url)
         val finalHeaders = if (uri.host == "telebirrchat.ethiomobilemoney.et" && headers.isEmpty()) {
-            hashMapOf(
-                "appid" to "1012673623603201",
-                "access-token" to "34A1367993D9409639D081B3A91159D37FD5DF999E2B97C8C822F92E44DE6A65",
-                "User-Agent" to "Dalvik/2.1.0 (Linux; U; Android 7.1.2; ASUS_Z01QD Build/N2G48H)",
-                "sendid" to "1012673623603201:978019208678401",
-            )
+            AppConstants.Network.HEADER_FOR_ZERO_RATING_URL
         } else {
             headers
         }
 
         val finalFileName = fileName
             ?: if (uri.host == "telebirrchat.ethiomobilemoney.et") {
-                uri.getQueryParameter("filename") ?: "video.mp4"
+                uri.getQueryParameter("filename") ?: URLUtil.guessFileName(url, null, null)
             } else {
                 URLUtil.guessFileName(url, null, null)
             }
