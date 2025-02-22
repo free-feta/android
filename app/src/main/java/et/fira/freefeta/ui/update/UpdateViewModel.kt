@@ -4,17 +4,16 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.provider.Settings
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ketch.DownloadModel
-import et.fira.freefeta.MainActivity
 import et.fira.freefeta.data.config.AppConfigRepository
 import et.fira.freefeta.data.file.FileDownloaderRepository
 import et.fira.freefeta.model.AppConfig
+import et.fira.freefeta.util.Util.isVersionOlder
 import et.fira.freefeta.util.createAndCheckFolder
 import et.fira.freefeta.util.hasFilePermission
 import kotlinx.coroutines.Job
@@ -159,20 +158,6 @@ class UpdateViewModel(
         }
     }
 
-
-    private fun isVersionOlder(installed: String, required: String): Boolean {
-        val installedParts = installed.split('.').map { it.toIntOrNull() ?: 0 }
-        val requiredParts = required.split('.').map { it.toIntOrNull() ?: 0 }
-
-        for (i in 0 until maxOf(installedParts.size, requiredParts.size)) {
-            val installedValue = installedParts.getOrElse(i) { 0 }
-            val requiredValue = requiredParts.getOrElse(i) { 0 }
-
-            if (installedValue < requiredValue) return true
-            if (installedValue > requiredValue) return false
-        }
-        return false
-    }
 }
 
 data class UpdateUiState(
