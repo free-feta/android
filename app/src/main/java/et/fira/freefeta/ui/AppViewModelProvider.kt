@@ -7,12 +7,26 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import et.fira.freefeta.FreeFetaApplication
 import et.fira.freefeta.ui.ad.AdViewModel
 import et.fira.freefeta.ui.home.HomeViewModel
+import et.fira.freefeta.ui.network.NetworkStatusViewModel
+import et.fira.freefeta.ui.onboarding.OnboardingScreenViewModel
 import et.fira.freefeta.ui.player.PlayerViewModel
 import et.fira.freefeta.ui.settings.SettingsViewModel
 import et.fira.freefeta.ui.update.UpdateViewModel
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
+        initializer {
+            OnboardingScreenViewModel(
+                userPreferencesRepository = freeFetaApplication().container.userPreferencesRepository
+            )
+        }
+
+        initializer {
+            NetworkStatusViewModel(
+                application = freeFetaApplication(),
+            )
+        }
+
         initializer {
             UpdateViewModel(
                 configRepository = freeFetaApplication().container.appConfigRepository,
