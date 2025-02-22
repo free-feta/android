@@ -64,6 +64,7 @@ class NetworkStatusMonitor(
             _networkState.value = when {
                 !canAccessZeroRating && !canAccessGeneric -> NetworkState.ZeroRatingUnreachable
                 canAccessZeroRating && !canAccessGeneric -> NetworkState.ZeroRatingOnly
+                !canAccessZeroRating && canAccessGeneric -> NetworkState.ZeroRatingUnreachable
                 else -> NetworkState.FullInternet
             }
         }
