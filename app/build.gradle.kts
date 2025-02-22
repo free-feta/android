@@ -43,6 +43,7 @@ android {
 dependencies {
     // Adaptive navigation suite
     implementation(libs.material3.adaptive.navigation.suite)
+    implementation(libs.androidx.core.splashscreen)
 
     val roomVersion = "2.6.1"
 
@@ -87,11 +88,14 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.6")
 
     // Window size
-    implementation("androidx.compose.material3:material3-window-size-class")
+//    implementation("androidx.compose.material3:material3-window-size-class")
 
     // ExoPlayer
     implementation("androidx.media3:media3-exoplayer:1.5.1")
     implementation("androidx.media3:media3-ui:1.5.1")
+
+    // WorkManager dependency
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
