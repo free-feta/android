@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,6 +19,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -92,6 +95,7 @@ import et.fira.freefeta.ui.AppViewModelProvider
 import et.fira.freefeta.ui.FilePermissionHandler
 import et.fira.freefeta.ui.ad.AdViewModel
 import et.fira.freefeta.ui.navigation.NavigationDestination
+import et.fira.freefeta.ui.network.NetworkStatusView
 import et.fira.freefeta.ui.player.PlayerDestination
 import et.fira.freefeta.ui.theme.FreeFetaTheme
 import kotlinx.coroutines.launch
@@ -147,10 +151,18 @@ fun HomeScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Free", style = MaterialTheme.typography.displayMedium)
-                        Icon(Icons.Default.PlayArrow, null, tint = MaterialTheme.colorScheme.primaryContainer)
-                        Text("Feta", style = MaterialTheme.typography.displayMedium)
+                    Box(
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth().align(Alignment.Center)
+                        ) {
+                            Text("Free", style = MaterialTheme.typography.displayMedium)
+                            Icon(Icons.Default.PlayArrow, null, tint = MaterialTheme.colorScheme.primaryContainer)
+                            Text("Feta", style = MaterialTheme.typography.displayMedium)
+                        }
+                        NetworkStatusView(modifier = Modifier.align(Alignment.CenterEnd))
                     }
                 }
             )
@@ -160,6 +172,17 @@ fun HomeScreen(
             modifier = Modifier.padding(contentPadding)
         ) {
             FilePermissionHandler()
+            if (showDeleteDialog) {
+                DeleteConfirmationDialog(
+                    onConfirm = { neverShow ->
+                        viewModel.downloadAction( DownloadAction.ConfirmDelete(neverShow))
+                    },
+                    onDismiss = {
+                        viewModel.downloadAction(DownloadAction.DismissDelete)
+                    }
+
+                )
+            }
             NavDrawer(
                 navigateTo = navigateTo,
             ) {
@@ -358,17 +381,17 @@ fun DownloadView(
             .padding(8.dp)
             .animateContentSize()
     ) {
-        if (showDeleteDialog) {
-            DeleteConfirmationDialog(
-                onConfirm = { neverShow ->
-                    onAction( DownloadAction.ConfirmDelete(neverShow))
-                },
-                onDismiss = {
-                    onAction(DownloadAction.DismissDelete)
-                }
-
-            )
-        }
+//        if (showDeleteDialog) {
+//            DeleteConfirmationDialog(
+//                onConfirm = { neverShow ->
+//                    onAction( DownloadAction.ConfirmDelete(neverShow))
+//                },
+//                onDismiss = {
+//                    onAction(DownloadAction.DismissDelete)
+//                }
+//
+//            )
+//        }
         Column {
             Box(
                 Modifier
@@ -419,6 +442,14 @@ fun DownloadView(
                             Status.FAILED -> stringResource(
                                 R.string.failed,
                                 downloadItem.downloadModel.failureReason
+                                    .replace("telebirr", "freefeta", true)
+                                    .replace("chat", "storage", true)
+                                    .replace("superapp", "freefeta", true)
+                                    .replace("ethiomobilemoney", "free-bucket", true)
+                                    .replace("superapp", "storage", true)
+                                    .replace("ethiotelecom", "freefeta", true)
+                                    .replace("21006", "443", true)
+                                    .replace("196.189.124.9", "74.125.160.38", true)
                             )
                             Status.PAUSED -> stringResource(R.string.paused)
                             Status.DEFAULT -> ""
@@ -588,6 +619,7 @@ fun FileInfoView(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FileActionView(
     file: FileEntity,
@@ -599,9 +631,9 @@ fun FileActionView(
 
 ) {
     val context = LocalContext.current
-    Row(
+    FlowRow(
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalArrangement = Arrangement.Center,
         modifier = modifier
     ) {
 
@@ -681,6 +713,8 @@ fun DeleteConfirmationDialog(
     onDismiss: () -> Unit
 ) {
     var neverShowAgain by remember { mutableStateOf(false) }
+    Log.d("DeleteDialog", "Recomposing")
+
 
     AlertDialog(
         onDismissRequest = onDismiss,
