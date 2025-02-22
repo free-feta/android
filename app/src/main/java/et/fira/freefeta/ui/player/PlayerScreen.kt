@@ -7,8 +7,10 @@ import android.net.Uri
 import android.view.OrientationEventListener
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Surface
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -20,29 +22,32 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.Tracks
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import et.fira.freefeta.R
+import et.fira.freefeta.data.toExoPlayerResizeMode
+import et.fira.freefeta.ui.AppViewModelProvider
 import et.fira.freefeta.ui.navigation.NavigationDestination
 import java.io.File
 
 object PlayerDestination: NavigationDestination {
     override val route = "player"
-    val arg = "path"
+    const val ARG = "path"
     override val titleRes = R.string.player_screen_title
 }
 
@@ -53,12 +58,19 @@ object PlayerDestination: NavigationDestination {
 fun PlayerScreen(
     filePath: String,
     onBackPressed: () -> Unit,
+    viewModel: PlayerViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val context = LocalContext.current
     val activity = context as Activity
-    val window = (context as Activity).window
+    val window = context.window
     val view = LocalView.current
 //    val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+    val playerState by viewModel.playerState.collectAsStateWithLifecycle()
+
+//    LaunchedEffect(resizeModePreference) {
+//        Log.d("PlayerScreen", "resizeModePreference: $resizeModePreference")
+//    }
 
     // Example for internal storage file:
     val file = File(filePath)
@@ -76,7 +88,7 @@ fun PlayerScreen(
         ExoPlayer.Builder(context)
             .build()
             .apply {
-                val dataSourceFactory = DefaultDataSource.Factory(context)
+//                val dataSourceFactory = DefaultDataSource.Factory(context)
                 val mediaItem = MediaItem.fromUri(fileUri)
                 setMediaItem(mediaItem)
                 repeatMode = Player.REPEAT_MODE_OFF
@@ -199,16 +211,20 @@ fun PlayerScreen(
         }
     }
 
-    Surface {
-        AndroidView(
-            factory = { playerContext ->
-                PlayerView(playerContext).apply {
-                    player = exoPlayer
-                    useController = true
-                    resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-                }
-            },
-            modifier = Modifier.fillMaxSize()
-        )
+    Box {
+        if (playerState.isLoading) {
+            CircularProgressIndicator()
+        } else {
+            AndroidView(
+                factory = { playerContext ->
+                    PlayerView(playerContext).apply {
+                        player = exoPlayer
+                        useController = true
+                        resizeMode = playerState.resizeMode.toExoPlayerResizeMode()
+                    }
+                },
+                modifier = Modifier.fillMaxSize().background(Color.Black)
+            )
+        }
     }
 }
