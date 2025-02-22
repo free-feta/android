@@ -5,6 +5,7 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -20,6 +21,8 @@ import et.fira.freefeta.ui.ad.AdDialog
 import et.fira.freefeta.ui.ad.AdViewModel
 import et.fira.freefeta.ui.home.HomeDestination
 import et.fira.freefeta.ui.home.HomeScreen
+import et.fira.freefeta.ui.onboarding.OnboardingScreen
+import et.fira.freefeta.ui.onboarding.OnboardingScreenViewModel
 import et.fira.freefeta.ui.player.PlayerDestination
 import et.fira.freefeta.ui.player.PlayerScreen
 import et.fira.freefeta.ui.settings.SettingsDestination
@@ -75,14 +78,23 @@ fun FreeFetaNavHost(
                 )
             }
         }
+        val onBoardingViewModel: OnboardingScreenViewModel = viewModel(factory = AppViewModelProvider.Factory)
+        val onboardingCompleted by onBoardingViewModel.onboardingCompleted.collectAsState(initial = true)
 
         currentAd?.let { ad ->
-            AdDialog(
-                ad = ad,
-                onDismiss = { adViewModel.onAdDismissed() }
-            )
+            if (onboardingCompleted) {
+                AdDialog(
+                    ad = ad,
+                    onDismiss = { adViewModel.onAdDismissed() }
+                )
+            }
         }
 
         AppUpdateDialog()
+        if (!onboardingCompleted) {
+            OnboardingScreen {
+                onBoardingViewModel.completeOnboarding()
+            }
+        }
     }
 }
