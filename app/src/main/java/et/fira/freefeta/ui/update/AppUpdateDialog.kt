@@ -4,7 +4,6 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.util.Patterns
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -181,7 +180,19 @@ fun AppUpdateDialog(
                                     Text("External Download")
                                 }
                             }
-
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            if (forceUpdate) {
+                                Button(
+                                    onClick = { (context as? MainActivity)?.finish() }
+                                ) {
+                                    Text("Exit")
+                                }
+                            }
                         }
                     }
                 }
