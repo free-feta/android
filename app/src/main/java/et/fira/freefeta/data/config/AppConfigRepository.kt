@@ -1,6 +1,7 @@
 package et.fira.freefeta.data.config
 
 import android.util.Log
+import android.webkit.URLUtil
 import et.fira.freefeta.model.AppConfig
 import et.fira.freefeta.network.FreeFetaApiService
 import kotlinx.coroutines.flow.Flow
@@ -12,6 +13,7 @@ interface AppConfigRepository {
     fun getConfigStream(): Flow<AppConfig?>
     suspend fun syncConfig()
     suspend fun getConfig(): AppConfig?
+    suspend fun getAnalyticsUrl(): String?
 }
 
 class AppConfigRepositoryImpl(
@@ -28,6 +30,8 @@ class AppConfigRepositoryImpl(
             val fetchedConfig = freeFetaApiService.getConfig()
             Log.d("AppConfigRepository", "Fetched config: $fetchedConfig")
             insertConfig(fetchedConfig)
+            Log.d("AppConfigRepository", "after insert in sync, thread: ${Thread.currentThread().name}")
+
         } catch (e: Exception) {
             if (e is CancellationException) {
                 throw e
@@ -37,8 +41,28 @@ class AppConfigRepositoryImpl(
     }
     override suspend fun getConfig(): AppConfig? {
         try {
+            Log.d("AppConfigRepository", "before syncing, thread: ${Thread.currentThread().name}")
             syncConfig()
             return appConfigDao.getConfig()
+        } catch (e: Exception) {
+            if (e is CancellationException) {
+                throw e
+            }
+            e.printStackTrace()
+            return null
+        }
+    }
+
+    override suspend fun getAnalyticsUrl(): String? {
+        try {
+            Log.d("AppConfigRepository", "Fetching analytics URL, thread: ${Thread.currentThread().name}")
+            val url = getConfig()?.analyticsUrl
+            Log.d("AppConfigRepository", "Fetched analytics URL: $url")
+            return if (URLUtil.isValidUrl(url)) {
+                url
+            } else {
+                null
+            }
         } catch (e: Exception) {
             if (e is CancellationException) {
                 throw e
