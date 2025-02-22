@@ -42,13 +42,13 @@ object AppViewModelProvider {
 
         initializer {
             SettingsViewModel(
-                userPreferencesRepository = freeFetaApplication().container.userPreferencesRepository
+                userPreferencesRepository = freeFetaApplication().container.userPreferencesRepository,
             )
         }
 
         initializer {
             PlayerViewModel(
-                localFileRepository = freeFetaApplication().container.localFileRepository
+                userPreferencesRepository = freeFetaApplication().container.userPreferencesRepository,
             )
         }
 
