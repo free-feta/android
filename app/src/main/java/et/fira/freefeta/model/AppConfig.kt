@@ -36,6 +36,10 @@ data class AppConfig(
 
     @ColumnInfo(name = "error_message")
     @SerializedName(value = "error_message")
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+
+    @ColumnInfo(name = "analytics_url")
+    @SerializedName(value = "analytics_url")
+    val analyticsUrl: String? = null
 
 )
