@@ -25,6 +25,7 @@ import et.fira.freefeta.data.file.LocalFileRepository
 import et.fira.freefeta.data.file.RemoteFileRepository
 import et.fira.freefeta.model.FileEntity
 import et.fira.freefeta.util.AppConstants
+import et.fira.freefeta.util.Util.syncNewFilesAndClearGarbage
 import et.fira.freefeta.util.createAndCheckFolder
 import et.fira.freefeta.util.hasFilePermission
 import kotlinx.coroutines.Dispatchers
@@ -134,33 +135,7 @@ class HomeViewModel(
     }
 
     suspend  fun fetchNewFiles(): Int {
-        try {
-            val fetchedFiles =  remoteFileRepository.getFiles()
-
-            // Get Stored files from db and
-            // set downloadId to null to all FileEntity to compare with
-            // fetchedFiles as it has no downloadId and isNew to true
-            val storedFiles = localFileRepository.getAllFiles().map { it.copy(downloadId = null, isNew = true) }
-            val newFiles = fetchedFiles.filter { fetchedFile ->
-                storedFiles.none { storedFile -> fetchedFile == storedFile }
-            }
-            if (newFiles.isNotEmpty()) {
-                localFileRepository.insertFile(newFiles)
-            }
-            val garbageFiles = storedFiles.filter { storedFile ->
-                fetchedFiles.none { fetchedFile -> fetchedFile == storedFile }
-            }
-            if (garbageFiles.isNotEmpty()) {
-                localFileRepository.deleteFile(garbageFiles)
-            }
-            Log.d("HomeViewModel", "Fetched ${newFiles.size} new files")
-            return newFiles.size
-
-        } catch (e: Exception) {
-            coroutineContext.ensureActive()
-            e.printStackTrace()
-        }
-        return 0
+        return syncNewFilesAndClearGarbage(remoteFileRepository, localFileRepository)
     }
 
     //TODO: pass file name to downloader - [FileEntity.name]

@@ -54,7 +54,6 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -87,7 +86,6 @@ import coil3.request.crossfade
 import com.ketch.DownloadModel
 import com.ketch.Status
 import et.fira.freefeta.R
-import et.fira.freefeta.util.Util
 import et.fira.freefeta.model.FileEntity
 import et.fira.freefeta.model.icon
 import et.fira.freefeta.ui.AppDestinations
@@ -98,6 +96,7 @@ import et.fira.freefeta.ui.navigation.NavigationDestination
 import et.fira.freefeta.ui.network.NetworkStatusView
 import et.fira.freefeta.ui.player.PlayerDestination
 import et.fira.freefeta.ui.theme.FreeFetaTheme
+import et.fira.freefeta.util.Util
 import kotlinx.coroutines.launch
 import kotlin.reflect.KFunction1
 import kotlin.reflect.KSuspendFunction0
@@ -112,7 +111,6 @@ object HomeDestination: NavigationDestination {
 fun HomeScreen(
     navigateTo: (String) -> Unit,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    windowSize: WindowWidthSizeClass,
     adViewModel: AdViewModel,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

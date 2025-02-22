@@ -3,7 +3,6 @@ package et.fira.freefeta.ui.navigation
 import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,7 +33,6 @@ import et.fira.freefeta.ui.update.AppUpdateDialog
 fun FreeFetaNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    windowSize: WindowWidthSizeClass
 ) {
     val adViewModel: AdViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val currentAd by adViewModel.adState
@@ -51,21 +49,21 @@ fun FreeFetaNavHost(
                 HomeScreen(
                     navigateTo = navController::navigate,
                     adViewModel = adViewModel,
-                    windowSize = windowSize
                 )
             }
-            composable(route = "${PlayerDestination.route}/{${PlayerDestination.arg}}") { backStackEntry ->
+            composable(route = "${PlayerDestination.route}/{${PlayerDestination.ARG}}") { backStackEntry ->
                 val filePath =
-                    Uri.decode(backStackEntry.arguments?.getString(PlayerDestination.arg) ?: "")
+                    Uri.decode(backStackEntry.arguments?.getString(PlayerDestination.ARG) ?: "")
                 PlayerScreen(
                     filePath = filePath,
-                ) {
-                    navController.navigate(HomeDestination.route) {
-                        popUpTo(HomeDestination.route) {
-                            inclusive = true
+                    onBackPressed = {
+                        navController.navigate(HomeDestination.route) {
+                            popUpTo(HomeDestination.route) {
+                                inclusive = true
+                            }
                         }
                     }
-                }
+                )
             }
             composable(route = SettingsDestination.route) {
                 SettingsScreen(
