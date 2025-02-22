@@ -19,7 +19,6 @@ import et.fira.freefeta.data.file.LocalFileRepositoryImpl
 import et.fira.freefeta.data.file.RemoteFileRepository
 import et.fira.freefeta.data.file.RemoteFileRepositoryImpl
 import et.fira.freefeta.network.FreeFetaApiService
-import et.fira.freefeta.network.NetworkStatusMonitor
 import et.fira.freefeta.network.TeleFileDownloaderService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -37,6 +36,7 @@ interface AppContainer {
     val adRepository: AdRepository
     val userPreferencesRepository: UserPreferencesRepository
     val deviceAnalyticsRepo: DeviceAnalyticsRepo
+    val workManagerSynUpdateRepository: SyncUpdateRepository
 
 }
 
@@ -91,6 +91,7 @@ class DefaultAppContainer(context: Context): AppContainer {
         freeFetaApiService = retrofitService,
         appConfigRepository = appConfigRepository
     )
+    override val workManagerSynUpdateRepository: SyncUpdateRepository = WorkManagerSynUpdateRepository(context)
 
 
 }
