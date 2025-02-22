@@ -9,6 +9,8 @@ import com.ketch.NotificationConfig
 import et.fira.freefeta.R
 import et.fira.freefeta.data.ad.AdRepository
 import et.fira.freefeta.data.ad.AdRepositoryImpl
+import et.fira.freefeta.data.analytics.DeviceAnalytics
+import et.fira.freefeta.data.analytics.DeviceAnalyticsRepo
 import et.fira.freefeta.data.config.AppConfigRepository
 import et.fira.freefeta.data.config.AppConfigRepositoryImpl
 import et.fira.freefeta.data.file.FileDownloaderRepository
@@ -17,6 +19,7 @@ import et.fira.freefeta.data.file.LocalFileRepositoryImpl
 import et.fira.freefeta.data.file.RemoteFileRepository
 import et.fira.freefeta.data.file.RemoteFileRepositoryImpl
 import et.fira.freefeta.network.FreeFetaApiService
+import et.fira.freefeta.network.NetworkStatusMonitor
 import et.fira.freefeta.network.TeleFileDownloaderService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -33,6 +36,8 @@ interface AppContainer {
     val appConfigRepository: AppConfigRepository
     val adRepository: AdRepository
     val userPreferencesRepository: UserPreferencesRepository
+    val deviceAnalyticsRepo: DeviceAnalyticsRepo
+
 }
 
 class DefaultAppContainer(context: Context): AppContainer {
@@ -81,5 +86,11 @@ class DefaultAppContainer(context: Context): AppContainer {
     override val userPreferencesRepository: UserPreferencesRepository by lazy {
         UserPreferencesRepository(context.dataStore)
     }
+    override val deviceAnalyticsRepo: DeviceAnalyticsRepo = DeviceAnalyticsRepo(
+        analytics = DeviceAnalytics(context),
+        freeFetaApiService = retrofitService,
+        appConfigRepository = appConfigRepository
+    )
+
 
 }
