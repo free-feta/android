@@ -1,5 +1,7 @@
 package et.fira.freefeta.ui.onboarding
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -84,120 +86,119 @@ fun OnboardingScreen(
     )
     val scope = rememberCoroutineScope()
 
-    FreeFetaTheme(
-        darkTheme = false
-    ) {
-        Scaffold(
-            containerColor = Color.Transparent,
-            modifier = Modifier.background(
-                brush = Brush.linearGradient(
-                    colors = listOf(Color(0xFFFFD700), Color(0xFFFFEA69)), // Gradient colors
-                    start = Offset(0f, 0f),
-                    end = Offset(1000f, 1000f) // Adjust direction
-                )
+    Scaffold(
+        containerColor = Color.Transparent,
+        modifier = Modifier.background(
+            brush = Brush.linearGradient(
+                colors = listOf(Color(0xFFFFD700), Color(0xFFFFEA69)), // Gradient colors
+                start = Offset(0f, 0f),
+                end = Offset(1000f, 1000f) // Adjust direction
             )
+        )
+
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
 
         ) {
-            Column(
+            // Top Skip button
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it)
-
+                    .fillMaxWidth()
+                    .padding(12.dp)
             ) {
-                // Top Skip button
+                if (pagerState.currentPage != items.size - 1) {
+                    TextButton(
+                        onClick = onBoardingComplete,
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                        colors = ButtonDefaults.buttonColors().copy(
+                            containerColor = Color(0xFFFFEFA7)
+                        )
+                    ) {
+                        Text(
+                            text = "Skip",
+                            color = Color.DarkGray
+                        )
+                    }
+                }
+            }
+
+            // Pager
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) { page ->
+                OnboardingPage(items[page])
+            }
+
+            // Bottom section with indicators and buttons
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp)
+            ) {
+                // Page indicators
+                Row(
+                    modifier = Modifier.align(Alignment.CenterStart),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    repeat(items.size) { iteration ->
+                        val color = if (pagerState.currentPage == iteration)
+                            Color.DarkGray
+                        else
+                            Color.DarkGray.copy(alpha = 0.3f)
+
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(color)
+                        )
+                    }
+                }
+
+                // Navigation buttons
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp)
+                    modifier = Modifier.align(Alignment.CenterEnd)
                 ) {
                     if (pagerState.currentPage != items.size - 1) {
-                        TextButton(
-                            onClick = onBoardingComplete,
-                            modifier = Modifier.align(Alignment.CenterEnd),
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    pagerState.animateScrollToPage(
+                                        page = pagerState.currentPage + 1,
+                                        animationSpec = tween(
+                                            durationMillis = 800,  // Customize duration
+                                            easing = FastOutSlowInEasing // Customize easing curve
+                                        )
+                                    )
+                                }
+                            },
                             colors = ButtonDefaults.buttonColors().copy(
-                                containerColor = Color(0xFFFFEFA7)
+                                containerColor = Color.DarkGray
                             )
                         ) {
-                            Text(
-                                text = "Skip",
-                                color = MaterialTheme.colorScheme.primary
-                            )
+                            Text("Next", color = Color.White)
                         }
-                    }
-                }
-
-                // Pager
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                ) { page ->
-                    OnboardingPage(items[page])
-                }
-
-                // Bottom section with indicators and buttons
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp)
-                ) {
-                    // Page indicators
-                    Row(
-                        modifier = Modifier.align(Alignment.CenterStart),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        repeat(items.size) { iteration ->
-                            val color = if (pagerState.currentPage == iteration)
-                                MaterialTheme.colorScheme.primary
-                            else
-                                MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
-
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .clip(CircleShape)
-                                    .background(color)
+                    } else {
+                        Button(
+                            onClick = onBoardingComplete,
+                            colors = ButtonDefaults.buttonColors().copy(
+                                containerColor = Color.Black
                             )
-                        }
-                    }
 
-                    // Navigation buttons
-                    Box(
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                    ) {
-                        if (pagerState.currentPage != items.size - 1) {
-                            Button(
-                                onClick = {
-                                    scope.launch {
-                                        pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors().copy(
-                                    containerColor = Color.DarkGray
-                                )
-                            ) {
-                                Text("Next")
-                            }
-                        } else {
-                            Button(
-                                onClick = onBoardingComplete,
-                                colors = ButtonDefaults.buttonColors().copy(
-                                    containerColor = Color.Black
-                                )
-
-                            ) {
-                                Text("Let's rock!")
-                            }
+                        ) {
+                            Text("Let's rock!", color = Color.White)
                         }
                     }
                 }
             }
         }
     }
-
-
-
 
 }
 
@@ -230,7 +231,7 @@ fun OnboardingPage(item: OnboardingItem) {
             text = item.description,
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+            color = Color.DarkGray.copy(alpha = 0.8f)
         )
     }
 }
@@ -239,6 +240,6 @@ fun OnboardingPage(item: OnboardingItem) {
 @Composable
 private fun OnboardingScreenPreview() {
     FreeFetaTheme {
-        OnboardingScreen {  }
+        OnboardingScreen { }
     }
 }
