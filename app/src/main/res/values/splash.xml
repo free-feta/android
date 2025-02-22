@@ -1,0 +1,8 @@
+<resources>
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@drawable/rectangle_logo</item>
+        <item name="windowSplashScreenBackground">#FFE027</item>
+        <item name="postSplashScreenTheme">@style/Theme.FreeFeta</item>
+        <item name="windowSplashScreenIconBackgroundColor">#ffffff</item>
+    </style>
+</resources>

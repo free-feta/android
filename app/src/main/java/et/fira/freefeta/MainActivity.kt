@@ -4,21 +4,24 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.activity.viewModels
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import et.fira.freefeta.ui.FreeFetaApp
-import et.fira.freefeta.util.AppConstants
-import et.fira.freefeta.util.createAndCheckFolder
 
 class MainActivity : ComponentActivity() {
-    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+    private val viewModel: SplashViewModel by viewModels { SplashViewModelFactory(application) }
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashscreen = installSplashScreen()
+
         super.onCreate(savedInstanceState)
+        splashscreen.setKeepOnScreenCondition { viewModel.uiState.value.isLoading }
+
         enableEdgeToEdge()
         setContent {
-            val windowSize = calculateWindowSizeClass(this)
+            val themeMode = viewModel.uiState.collectAsStateWithLifecycle()
             FreeFetaApp(
-                windowSize = windowSize.widthSizeClass
+                themeMode = themeMode.value.theme,
             )
         }
     }
