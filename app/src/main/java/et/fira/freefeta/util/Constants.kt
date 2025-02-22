@@ -13,6 +13,18 @@ object AppConstants {
             "User-Agent" to "Dalvik/2.1.0 (Linux; U; Android 7.1.2; ASUS_Z01QD Build/N2G48H)",
             "sendid" to "1012673623603201:978019208678401",
         )
+    }
+
+    object Worker {
+        val UPDATE_SYNC_NOTIFICATION_CHANNEL_NAME: CharSequence =
+            "Update Sync Notifications"
+        const val UPDATE_SYNC_NOTIFICATION_CHANNEL_DESCRIPTION =
+            "Shows notifications whenever update is available"
+        val APP_UPDATE_NOTIFICATION_TITLE: CharSequence = "App Update Available"
+        val NEW_FILE_RELEASE_NOTIFICATION_TITLE: CharSequence = "New file release"
+        const val UPDATE_SYNC_CHANNEL_ID = "UPDATE_SYNC_NOTIFICATION"
+
+        const val UPDATE_SYNC_WORK_NAME = "UPDATE_SYNC_WORK"
 
     }
 }
