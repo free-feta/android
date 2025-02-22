@@ -1,12 +1,13 @@
 package et.fira.freefeta.ui
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import et.fira.freefeta.data.ThemeMode
 import et.fira.freefeta.ui.about.AboutDestination
 import et.fira.freefeta.ui.home.HomeDestination
 import et.fira.freefeta.ui.navigation.FreeFetaNavHost
@@ -25,19 +26,19 @@ enum class AppDestinations(
 
 @Composable
 fun FreeFetaApp(
-    windowSize: WindowWidthSizeClass
+    themeMode: ThemeMode
 ) {
 //    val themeMode = freeFetaViewModel.themeMode.collectAsState()
-//    val isDarkTheme: Boolean = when(themeMode.value) {
-//        ThemeMode.LIGHT -> false
-//        ThemeMode.DARK -> true
-//        ThemeMode.SYSTEM -> isSystemInDarkTheme()
-//    }
-    FreeFetaTheme() {
+    val isDarkTheme: Boolean = when(themeMode) {
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+    }
+    FreeFetaTheme(
+        darkTheme = isDarkTheme
+    ) {
 
-        FreeFetaNavHost(
-            windowSize = windowSize
-        )
+        FreeFetaNavHost()
     }
 }
 
