@@ -10,7 +10,11 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.content.PermissionChecker
+import et.fira.freefeta.data.file.LocalFileRepository
+import et.fira.freefeta.data.file.RemoteFileRepository
+import kotlinx.coroutines.ensureActive
 import java.io.File
+import kotlin.coroutines.coroutineContext
 
 object Util {
 
@@ -21,6 +25,53 @@ object Util {
     private const val VALUE_500 = 500
     private const val VALUE_1024 = 1024
     private const val SEC_IN_MILLIS = 1000
+
+    fun isVersionOlder(installed: String, required: String): Boolean {
+        val installedParts = installed.split('.').map { it.toIntOrNull() ?: 0 }
+        val requiredParts = required.split('.').map { it.toIntOrNull() ?: 0 }
+
+        for (i in 0 until maxOf(installedParts.size, requiredParts.size)) {
+            val installedValue = installedParts.getOrElse(i) { 0 }
+            val requiredValue = requiredParts.getOrElse(i) { 0 }
+
+            if (installedValue < requiredValue) return true
+            if (installedValue > requiredValue) return false
+        }
+        return false
+    }
+
+    suspend fun syncNewFilesAndClearGarbage(
+        remoteFileRepository: RemoteFileRepository,
+        localFileRepository: LocalFileRepository
+    ): Int {
+        try {
+            val fetchedFiles =  remoteFileRepository.getFiles()
+
+            // Get Stored files from db and
+            // set downloadId to null to all FileEntity to compare with
+            // fetchedFiles as it has no downloadId and isNew to true
+            val storedFiles = localFileRepository.getAllFiles().map { it.copy(downloadId = null, isNew = true) }
+            val newFiles = fetchedFiles.filter { fetchedFile ->
+                storedFiles.none { storedFile -> fetchedFile == storedFile }
+            }
+            if (newFiles.isNotEmpty()) {
+                localFileRepository.insertFile(newFiles)
+            }
+            val garbageFiles = storedFiles.filter { storedFile ->
+                fetchedFiles.none { fetchedFile -> fetchedFile == storedFile }
+            }
+            if (garbageFiles.isNotEmpty()) {
+                localFileRepository.deleteFile(garbageFiles)
+            }
+            Log.d("HomeViewModel", "Fetched ${newFiles.size} new files")
+            return newFiles.size
+
+        } catch (e: Exception) {
+            coroutineContext.ensureActive()
+            e.printStackTrace()
+        }
+        return 0
+    }
 
     fun getTimeLeftText(
         speedInBPerMs: Float,
