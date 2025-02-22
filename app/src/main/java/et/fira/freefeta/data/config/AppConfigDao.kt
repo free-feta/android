@@ -24,6 +24,6 @@ interface AppConfigDao {
     fun getConfigStream(): Flow<AppConfig?>
 
     @Query("SELECT * from app_config WHERE id = 1")
-    fun getConfig(): AppConfig?
+    suspend fun getConfig(): AppConfig?
 
 }
