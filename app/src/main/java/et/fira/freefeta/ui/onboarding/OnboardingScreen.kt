@@ -41,7 +41,7 @@ import kotlinx.coroutines.launch
 
 // Data class for onboarding items
 data class OnboardingItem(
-    val image: Int,
+    val image: Int? = null,
     val title: String,
     val description: String
 )
@@ -58,22 +58,22 @@ fun OnboardingScreen(
             description = "Your gateway to entertainment freedom, completely free."
         ),
         OnboardingItem(
-            image = R.drawable.file_image,
+//            image = R.drawable.file_image,
             title = "No Data? No Problem!",
             description = "Download videos and files without an active data package or airtime balance."
         ),
         OnboardingItem(
-            image = R.drawable.file_image,
+//            image = R.drawable.file_image,
             title = "Easy to use",
             description = "Follow simple steps to connect and start downloading in seconds."
         ),
         OnboardingItem(
-            image = R.drawable.file_image,
+//            image = R.drawable.file_image,
             title = "All-in-One Media Player",
             description = "Watch movies and videos, listen to music and podcasts, and explore more—all in one app."
         ),
         OnboardingItem(
-            image = R.drawable.file_image,
+//            image = R.drawable.file_image,
             title = "Stay Updated!",
             description = "New content is added regularly. Ensure you have an active internet connection to fetch the latest files."
         )
@@ -211,13 +211,15 @@ fun OnboardingPage(item: OnboardingItem) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Image(
-            painter = painterResource(id = item.image),
-            contentDescription = null,
-            modifier = Modifier
-                .size(200.dp)
-                .padding(bottom = 16.dp)
-        )
+        if (item.image != null) {
+            Image(
+                painter = painterResource(id = item.image),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(200.dp)
+                    .padding(bottom = 16.dp)
+            )
+        }
 
         Text(
             text = item.title,
