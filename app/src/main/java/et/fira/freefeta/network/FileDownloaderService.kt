@@ -43,42 +43,42 @@ class TeleFileDownloaderService(
     fun cancel(id: Int) {
         ketch.cancel(id)
     }
-    fun cancel(tag: String) {
-        ketch.cancel(tag)
-    }
-    fun cancelAll() {
-        ketch.cancelAll()
-    }
+//    fun cancel(tag: String) {
+//        ketch.cancel(tag)
+//    }
+//    fun cancelAll() {
+//        ketch.cancelAll()
+//    }
 
     fun pause(id: Int) {
         ketch.pause(id)
     }
-    fun pause(tag: String) {
-        ketch.pause(tag)
-    }
-    fun pauseAll() {
-        ketch.pauseAll()
-    }
+//    fun pause(tag: String) {
+//        ketch.pause(tag)
+//    }
+//    fun pauseAll() {
+//        ketch.pauseAll()
+//    }
 
     fun resume(id: Int) {
         ketch.resume(id)
     }
-    fun resume(tag: String) {
-        ketch.resume(tag)
-    }
-    fun resumeAll() {
-        ketch.resumeAll()
-    }
+//    fun resume(tag: String) {
+//        ketch.resume(tag)
+//    }
+//    fun resumeAll() {
+//        ketch.resumeAll()
+//    }
 
     fun retry(id: Int) {
         ketch.retry(id)
     }
-    fun retry(tag: String) {
-        ketch.retry(tag)
-    }
-    fun retryAll() {
-        ketch.retryAll()
-    }
+//    fun retry(tag: String) {
+//        ketch.retry(tag)
+//    }
+//    fun retryAll() {
+//        ketch.retryAll()
+//    }
 
     fun delete(id: Int) {
         ketch.clearDb(id)
@@ -92,9 +92,9 @@ class TeleFileDownloaderService(
     fun delete(tag: String, deleteFile: Boolean) {
         ketch.clearDb(tag, deleteFile)
     }
-    fun deleteAll() {
-        ketch.clearAllDb()
-    }
+//    fun deleteAll() {
+//        ketch.clearAllDb()
+//    }
 
     fun observeDownloadById(id: Int): Flow<DownloadModel> {
         return ketch.observeDownloadById(id)
