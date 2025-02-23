@@ -28,6 +28,7 @@ abstract class FreeFetaDatabase: RoomDatabase() {
                 Room.databaseBuilder(
                     context, FreeFetaDatabase::class.java, "free_feta_database"
                 )
+                    .createFromAsset("database/free_feta_database.db")
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { Instance = it }
