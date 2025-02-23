@@ -43,6 +43,7 @@ object AppViewModelProvider {
         initializer {
             SettingsViewModel(
                 userPreferencesRepository = freeFetaApplication().container.userPreferencesRepository,
+                configRepository = freeFetaApplication().container.appConfigRepository
             )
         }
 
