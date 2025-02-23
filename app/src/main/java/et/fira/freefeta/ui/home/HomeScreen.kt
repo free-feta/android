@@ -54,7 +54,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -77,8 +77,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
+import coil3.compose.SubcomposeAsyncImageContent
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.ketch.DownloadModel
@@ -87,7 +88,6 @@ import et.fira.freefeta.R
 import et.fira.freefeta.model.FileEntity
 import et.fira.freefeta.model.icon
 import et.fira.freefeta.ui.AppDestinations
-import et.fira.freefeta.ui.AppViewModelProvider
 import et.fira.freefeta.ui.FilePermissionHandler
 import et.fira.freefeta.ui.ad.AdViewModel
 import et.fira.freefeta.ui.navigation.NavigationDestination
@@ -571,27 +571,40 @@ fun FileInfoView(
                         .data(file.thumbnailUlr)
                         .crossfade(true)
                         .build(),
-                    error = {
+//                    error = {
+//                        Image(
+//                            painter = painterResource(file.icon),
+//                            contentDescription = null,
+//                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+//                            modifier = Modifier.fillMaxSize()
+//
+//                        )
+//                    },
+//                    loading = {
+//                        Image(
+//                            painter = painterResource(R.drawable.loading_img),
+//                            contentDescription = null,
+//                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+//                            modifier = Modifier.fillMaxSize()
+//
+//                        )
+//                    },
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                ) {
+                    val state by painter.state.collectAsState()
+                    if (state is AsyncImagePainter.State.Success) {
+                        SubcomposeAsyncImageContent()
+                    } else {
                         Image(
                             painter = painterResource(file.icon),
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
                             modifier = Modifier.fillMaxSize()
-
                         )
-                    },
-                    loading = {
-                        Image(
-                            painter = painterResource(R.drawable.loading_img),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier.fillMaxSize()
-
-                        )
-                    },
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                )
+//                        CircularProgressIndicator()
+                    }
+                }
             } else {
                 Image(
                     painter = painterResource(file.icon),
