@@ -81,7 +81,7 @@ fun SettingsScreen(
         }
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
@@ -126,7 +126,7 @@ fun SettingsScreen(
                     PreferenceItem(
                         title = "Check for Updates",
                         subtitle = "Current version: ${context.getInstalledVersion()}",
-                        onClick = viewModel::checkForUpdate
+                        onClick = {viewModel.checkForUpdate(context)}
                     )
                 }
             }
