@@ -18,7 +18,7 @@ class WorkManagerSynUpdateRepository(context: Context): SyncUpdateRepository {
     private val workManager = WorkManager.getInstance(context)
 
     override fun startSyncUpdate() {
-        val syncUpdateRequest = PeriodicWorkRequestBuilder<SyncUpdateWorker>(6, TimeUnit.HOURS)
+        val syncUpdateRequest = PeriodicWorkRequestBuilder<SyncUpdateWorker>(2, TimeUnit.HOURS)
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
