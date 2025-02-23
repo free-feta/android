@@ -64,6 +64,7 @@ enum class MediaType {
     SERIES,
     MUSIC,
     PODCAST,
+    AUDIOBOOK,
     DOCUMENTARY
 }
 
@@ -75,6 +76,7 @@ val FileEntity.icon: Int
             MediaType.MUSIC -> R.drawable.file_music
             MediaType.PODCAST -> R.drawable.file_podcast
             MediaType.DOCUMENTARY -> R.drawable.file_documentary
+            MediaType.AUDIOBOOK -> R.drawable.audiobook
             else -> R.drawable.file_unknown
         }
     } else {
