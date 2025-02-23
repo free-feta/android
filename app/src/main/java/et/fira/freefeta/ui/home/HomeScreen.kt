@@ -9,9 +9,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -80,7 +78,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.ketch.DownloadModel
@@ -97,6 +95,7 @@ import et.fira.freefeta.ui.network.NetworkStatusView
 import et.fira.freefeta.ui.player.PlayerDestination
 import et.fira.freefeta.ui.theme.FreeFetaTheme
 import et.fira.freefeta.util.Util
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.reflect.KFunction1
 import kotlin.reflect.KSuspendFunction0
@@ -110,7 +109,7 @@ object HomeDestination: NavigationDestination {
 @Composable
 fun HomeScreen(
     navigateTo: (String) -> Unit,
-    viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    viewModel: HomeViewModel,
     adViewModel: AdViewModel,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -122,11 +121,6 @@ fun HomeScreen(
         if (isGranted) {
         }
     }
-
-    LaunchedEffect(Unit) {
-        viewModel.fetchNewFilesAndNotify(context)
-    }
-
 
     DisposableEffect(Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -149,12 +143,13 @@ fun HomeScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Box(
-                    ) {
+                    Box {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.fillMaxWidth().align(Alignment.Center)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .align(Alignment.Center)
                         ) {
                             Text("Free", style = MaterialTheme.typography.displayMedium)
                             Icon(Icons.Default.PlayArrow, null, tint = MaterialTheme.colorScheme.primaryContainer)
@@ -191,7 +186,6 @@ fun HomeScreen(
                         },
                         onAction = viewModel::downloadAction,
                         fetchNewFiles = viewModel::fetchNewFiles,
-                        showDeleteDialog = showDeleteDialog,
                         navigateTo = navigateTo,
                         triggerAd = adViewModel::triggerAdBeforeAction,
                         modifier = Modifier.fillMaxSize(),
@@ -268,7 +262,6 @@ fun HomeBody(
     downloadItemList: Map<String, List<DownloadItem>>,
     onAction: (DownloadAction) -> Unit,
     fetchNewFiles: KSuspendFunction0<Int>,
-    showDeleteDialog: Boolean,
     navigateTo: (String) -> Unit,
     modifier: Modifier = Modifier,
     triggerAd: KFunction1<() -> Unit, Unit>,
@@ -277,7 +270,6 @@ fun HomeBody(
         groupedDownloadItemList = downloadItemList,
         onAction = onAction,
         fetchNewFiles = fetchNewFiles,
-        showDeleteDialog = showDeleteDialog,
         navigateTo = navigateTo,
         triggerAd = triggerAd,
         modifier = modifier.fillMaxSize()
@@ -290,7 +282,6 @@ fun DownloadList(
     groupedDownloadItemList: Map<String, List<DownloadItem>>,
     onAction: (DownloadAction) -> Unit,
     fetchNewFiles: KSuspendFunction0<Int>,
-    showDeleteDialog: Boolean,
     navigateTo: (String) -> Unit,
     modifier: Modifier = Modifier,
     triggerAd: KFunction1<() -> Unit, Unit>,
@@ -304,6 +295,7 @@ fun DownloadList(
         onRefresh = {
             isRefreshing = true
             coroutineScope.launch {
+                delay(500)
                 val newFiles = fetchNewFiles()
                 if (newFiles > 0) {
                     Toast.makeText(context, "Fetched $newFiles new files", Toast.LENGTH_SHORT).show()
@@ -322,7 +314,9 @@ fun DownloadList(
                 .padding(horizontal = 8.dp),
         ) {
             groupedDownloadItemList.forEach { (type, itemList) ->
-                stickyHeader {
+                stickyHeader(
+                    key = type
+                ) {
                     Text(
                         text = type,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -341,7 +335,6 @@ fun DownloadList(
                     DownloadView(
                         downloadItem = it,
                         onAction = onAction,
-                        showDeleteDialog = showDeleteDialog,
                         navigateTo = navigateTo,
                         triggerAd = triggerAd,
                         modifier = Modifier
@@ -360,19 +353,19 @@ fun DownloadList(
 fun DownloadView(
     downloadItem: DownloadItem,
     onAction: (DownloadAction) -> Unit,
-    showDeleteDialog: Boolean,
     navigateTo: (String) -> Unit,
     modifier: Modifier = Modifier,
     triggerAd: KFunction1<() -> Unit, Unit>,
 
 ) {
-    val alpha = remember { Animatable(0f) }
-
-    // Animate from transparent to full visibility when recomposed
-    LaunchedEffect(downloadItem) {
-        alpha.snapTo(1f)
-        alpha.animateTo(0f, animationSpec = tween(500))
-    }
+//    val alpha = remember { Animatable(0f) }
+//
+//    // Animate from transparent to full visibility when recomposed
+//    LaunchedEffect(downloadItem) {
+////        Log.d("DownloadView", "DownloadItem: $downloadItem")
+//        alpha.snapTo(1f)
+//        alpha.animateTo(0f, animationSpec = tween(500))
+//    }
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -512,7 +505,7 @@ fun Badge(text: String) {
         modifier = Modifier
 //            .size(40.dp)
             .background(MaterialTheme.colorScheme.tertiaryContainer,
-                shape = RoundedCornerShape(bottomEnd = 8.dp,)
+                shape = RoundedCornerShape(bottomEnd = 8.dp)
             )
         ,
         contentAlignment = Alignment.Center
@@ -538,21 +531,64 @@ fun FileInfoView(
     triggerAd: KFunction1<() -> Unit, Unit>,
 
 ) {
+    val context = LocalContext.current
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
     ) {
         Box(
-            modifier = Modifier.size(128.dp)
+            modifier = Modifier
+                .size(128.dp)
+                .clickable(
+                    onClick = {
+                        if (downloadModel != null) {
+                            if (downloadModel.status == Status.SUCCESS) {
+                                if (file.isPlayable) {
+                                    triggerAd {
+                                        onAction(DownloadAction.Play(
+                                            onPlay = {
+                                                val encodedFilePath =
+                                                    Uri.encode("${downloadModel.path}/${downloadModel.fileName}")
+                                                navigateTo("${PlayerDestination.route}/$encodedFilePath")
+                                            }
+                                        ))
+                                    }
+                                } else {
+                                    onAction(DownloadAction.Open(context, downloadModel))
+                                }
+
+                            }
+                        } else {
+                            onAction(DownloadAction.Download(context, file))
+                        }
+                    }
+                )
         ){
             if (file.thumbnailUlr != null) {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(file.thumbnailUlr)
                         .crossfade(true)
                         .build(),
-                    error = painterResource(file.icon),
-                    placeholder = painterResource(R.drawable.loading_img),
+                    error = {
+                        Image(
+                            painter = painterResource(file.icon),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier.fillMaxSize()
+
+                        )
+                    },
+                    loading = {
+                        Image(
+                            painter = painterResource(R.drawable.loading_img),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier.fillMaxSize()
+
+                        )
+                    },
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                 )
@@ -562,15 +598,17 @@ fun FileInfoView(
                     contentScale = ContentScale.Crop,
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                    modifier = Modifier.fillMaxSize()
+
                 )
             }
         }
-        Spacer(Modifier.width(8.dp))
-        Column(
-        ) {
+        Spacer(Modifier.width(12.dp))
+        Column {
             Text(
                 text = file.name,
-                style = MaterialTheme.typography.displaySmall
+                style = MaterialTheme.typography.displaySmall,
+                fontSize = 20.sp
             )
 //            Spacer(Modifier.height(8.dp))
             Row(
@@ -890,7 +928,6 @@ fun DownloadViewPreview() {
                 ) else null
             ),
             onAction = {},
-            showDeleteDialog = false,
             navigateTo = {},
             triggerAd = { action: () -> Unit -> action() } as KFunction1<() -> Unit, Unit>,
 
