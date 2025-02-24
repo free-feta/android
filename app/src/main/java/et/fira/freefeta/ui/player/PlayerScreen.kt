@@ -221,6 +221,8 @@ fun PlayerScreen(
                         player = exoPlayer
                         useController = true
                         resizeMode = playerState.resizeMode.toExoPlayerResizeMode()
+                        setShowNextButton(false)
+                        setShowPreviousButton(false)
                     }
                 },
                 modifier = Modifier.fillMaxSize().background(Color.Black)
