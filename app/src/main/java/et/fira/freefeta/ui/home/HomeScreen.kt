@@ -591,16 +591,21 @@ fun FileInfoView(
 //                    },
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     val state by painter.state.collectAsState()
                     if (state is AsyncImagePainter.State.Success) {
-                        SubcomposeAsyncImageContent()
+                        SubcomposeAsyncImageContent(
+                            contentScale = ContentScale.Crop,
+                        )
                     } else {
                         Image(
                             painter = painterResource(file.icon),
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+
                         )
 //                        CircularProgressIndicator()
                     }
