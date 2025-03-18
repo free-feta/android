@@ -138,3 +138,89 @@ fun Badge(text: String) {
         )
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun DownloadItemPreview() {
+    val adViewModel = AdViewModel(FakeAddRepo());
+    FreeFetaTheme {
+        DownloadItem(
+            DownloadItemData(
+                file = FileEntity(
+                    id = 1,
+                    fileType = FileType.VIDEO,
+                    name = "Top Gun: Mavrick smth",
+                    downloadUrl = "",
+                    size = "1MB",
+                    runtime = "1h 34min"
+
+                ),
+                downloadModel = if (false) DownloadModel(
+                    url = "",
+                    path = "",
+                    fileName = "",
+                    tag = "",
+                    id = 1,
+                    headers = hashMapOf(),
+                    timeQueued = 1,
+                    status = Status.PROGRESS,
+                    total = 1024 * 1024,
+                    progress = 50,
+                    speedInBytePerMs = 1024 * 1024 / 1000f,
+                    lastModified = 11,
+                    eTag = "",
+                    metaData = "",
+                    failureReason = ""
+                ) else null
+            ),
+            onAction = {},
+            navigateTo = {},
+            triggerAd = adViewModel::triggerAdBeforeAction,
+
+//            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+class FakeAddRepo : AdRepository {
+    override suspend fun insertAd(advertisement: Advertisement) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun insertAd(advertisements: List<Advertisement>) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteAd(advertisement: Advertisement) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteAd(advertisements: List<Advertisement>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getAd(id: Int): Flow<Advertisement> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getAllAdsStream(): Flow<List<Advertisement>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun fetchRemoteAds(): List<Advertisement> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun syncNewAds(): Int {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getStartUpAd(): Advertisement? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getOnDemandAd(): Advertisement? {
+        TODO("Not yet implemented")
+    }
+
+}

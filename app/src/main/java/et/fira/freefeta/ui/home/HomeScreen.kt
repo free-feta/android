@@ -187,7 +187,7 @@ fun HomeScreen(
 
 @Composable
 fun HomeBody(
-    downloadItemList: Map<String, List<DownloadItem>>,
+    downloadItemList: Map<String, List<DownloadItemData>>,
     onAction: (DownloadAction) -> Unit,
     fetchNewFiles: KSuspendFunction0<Int>,
     navigateTo: (String) -> Unit,
@@ -254,38 +254,5 @@ fun NavDrawer(
 @Composable
 fun DownloadViewPreview() {
     FreeFetaTheme {
-        DownloadItem(
-            DownloadItem(
-                file = FileEntity(
-                    id = 1,
-                    name = "Top Gun: Mavrick smth",
-                    downloadUrl = "",
-                    size = "1MB",
-                    runtime = "1h 34min"
-                ),
-                downloadModel = if (true) DownloadModel(
-                    url = "",
-                    path = "",
-                    fileName = "",
-                    tag = "",
-                    id = 1,
-                    headers = hashMapOf(),
-                    timeQueued = 1,
-                    status = Status.PROGRESS,
-                    total = 1024*1024,
-                    progress = 50,
-                    speedInBytePerMs = 1024 * 1024 / 1000f,
-                    lastModified = 11,
-                    eTag = "",
-                    metaData = "",
-                    failureReason = ""
-                ) else null
-            ),
-            onAction = {},
-            navigateTo = {},
-            triggerAd = { action: () -> Unit -> action() } as KFunction1<() -> Unit, Unit>,
-
-//            modifier = Modifier.fillMaxWidth()
-        )
     }
 }
