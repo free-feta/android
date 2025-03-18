@@ -26,6 +26,12 @@ data class FileEntity(
     val name: String,
     val size: String? = null,
 
+    @SerializedName(value = "folder_name")
+    @ColumnInfo(name = "folder_name")
+    val folderName: String? = null,
+
+    val hash: String? = null,
+
     @SerializedName(value = "download_url")
     @ColumnInfo(name = "download_url")
     val downloadUrl: String,
