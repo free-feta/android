@@ -60,7 +60,7 @@ fun FileInfoView(
     ) {
         Box(
             modifier = Modifier
-                .size(128.dp)
+                .size(64.dp)
                 .clickable(
                     onClick = {
                         if (downloadModel != null) {
