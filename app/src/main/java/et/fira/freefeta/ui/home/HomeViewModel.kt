@@ -8,11 +8,9 @@ import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.Settings
-import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
@@ -29,20 +27,16 @@ import et.fira.freefeta.util.Util.syncNewFilesAndClearGarbage
 import et.fira.freefeta.util.createAndCheckFolder
 import et.fira.freefeta.util.hasFilePermission
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import kotlin.coroutines.coroutineContext
 
 sealed interface DownloadAction {
     data class Cancel(var downloadModel: DownloadModel): DownloadAction
@@ -68,9 +62,9 @@ class HomeViewModel(
     private val downloadModelsFlow: Flow<List<DownloadModel>> = fileDownloaderRepository.observeDownloads()
 
     val uiState: StateFlow<HomeUiState> = combine(filesFlow, downloadModelsFlow) { files, downloads ->
-        val itemList: List<DownloadItem> = files.map { file ->
+        val itemList: List<DownloadItemData> = files.map { file ->
             val download = downloads.find { it.id == file.downloadId }
-            DownloadItem(file, download)
+            DownloadItemData(file, download)
         }
         HomeUiState(itemList)
     }.stateIn(
@@ -292,10 +286,10 @@ class HomeViewModel(
 }
 
 data class HomeUiState(
-    val downloadItemList: List<DownloadItem> = listOf()
+    val downloadItemList: List<DownloadItemData> = listOf()
 )
 
-data class DownloadItem(
+data class DownloadItemData(
     val file: FileEntity,
     val downloadModel: DownloadModel?,
 )
