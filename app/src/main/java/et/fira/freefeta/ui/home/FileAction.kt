@@ -51,7 +51,7 @@ fun FileActionView(
     ) {
     val context = LocalContext.current
     FlowRow(
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.Center,
         modifier = modifier
     ) {
@@ -179,7 +179,7 @@ private fun ActionIcon(
 ) {
     IconButton(
         onClick = onClick,
-        modifier = modifier.size(36.dp)
+        modifier = modifier.size(28.dp)
     ) {
         Icon(
             painter = painterResource(iconRes),
