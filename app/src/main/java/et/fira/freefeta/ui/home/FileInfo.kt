@@ -3,6 +3,7 @@ package et.fira.freefeta.ui.home
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,8 +26,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImagePainter
@@ -38,8 +42,11 @@ import com.ketch.DownloadModel
 import com.ketch.Status
 import et.fira.freefeta.R
 import et.fira.freefeta.model.FileEntity
+import et.fira.freefeta.model.FileType
 import et.fira.freefeta.model.icon
+import et.fira.freefeta.ui.ad.AdViewModel
 import et.fira.freefeta.ui.player.PlayerDestination
+import et.fira.freefeta.ui.theme.FreeFetaTheme
 import kotlin.reflect.KFunction1
 
 @Composable
@@ -55,7 +62,7 @@ fun FileInfoView(
     val context = LocalContext.current
 
     Row(
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Top,
         modifier = modifier
     ) {
         Box(
@@ -119,6 +126,14 @@ fun FileInfoView(
                         SubcomposeAsyncImageContent(
                             contentScale = ContentScale.Crop,
                         )
+                    } else if (state is AsyncImagePainter.State.Loading) {
+                        Image(
+                            painter = painterResource(R.drawable.loading_img),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                        )
                     } else {
                         Image(
                             painter = painterResource(file.icon),
@@ -126,7 +141,6 @@ fun FileInfoView(
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop,
-
                             )
 //                        CircularProgressIndicator()
                     }
@@ -146,50 +160,100 @@ fun FileInfoView(
         Column {
             Text(
                 text = file.name,
-                style = MaterialTheme.typography.displaySmall,
-                fontSize = 20.sp
+//                style = MaterialTheme.typography.displaySmall,
+                fontFamily = FontFamily.SansSerif,
+                fontWeight = FontWeight.Normal,
+                fontSize = 16.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-//            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
             Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
 //                    .padding(horizontal = 16.dp)
             ) {
-                if (file.runtime != null) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.time_icon),
-                            contentDescription = stringResource(R.string.duration),
-                            //                    tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Text(
-                            text = file.runtime
-                        )
+                Column {
+                    if (file.runtime != null) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.time_icon),
+                                contentDescription = stringResource(R.string.duration),
+                                //                    tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = file.runtime,
+                                fontSize = 12.sp
+                            )
+                        }
                     }
+
+                    Text(
+                        text = file.size?.uppercase() ?: "",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontStyle = FontStyle.Italic,
+                        fontSize = 12.sp
+                    )
                 }
+
                 Spacer(Modifier.weight(1f))
 
-                Text(
-                    text = file.size?.uppercase() ?: "",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontStyle = FontStyle.Italic,
-                    fontWeight = FontWeight.Bold
+                FileActionView(
+                    file = file,
+                    downloadModel = downloadModel,
+                    onAction = onAction,
+                    navigateTo = navigateTo,
+                    triggerAd = triggerAd,
+//                    modifier = Modifier.fillMaxWidth()
                 )
             }
-            Spacer(Modifier.height(28.dp))
-
-            FileActionView(
-                file = file,
-                downloadModel = downloadModel,
-                onAction = onAction,
-                navigateTo = navigateTo,
-                triggerAd = triggerAd,
-                modifier = Modifier.fillMaxWidth()
-            )
         }
 
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+private fun FileInfoPreview() {
+    val adViewModel = AdViewModel(FakeAddRepo());
+    FreeFetaTheme {
+        FileInfoView(
+                file = FileEntity(
+                    id = 1,
+                    fileType = FileType.VIDEO,
+                    name = "Top Gun: Mavrick smth",
+                    downloadUrl = "",
+                    size = "1MB",
+                    runtime = "1h 34min",
+                ),
+                downloadModel = if (true) DownloadModel(
+                    url = "",
+                    path = "",
+                    fileName = "",
+                    tag = "",
+                    id = 1,
+                    headers = hashMapOf(),
+                    timeQueued = 1,
+                    status = Status.PROGRESS,
+                    total = 1024*1024,
+                    progress = 50,
+                    speedInBytePerMs = 1024 * 1024 / 1000f,
+                    lastModified = 11,
+                    eTag = "",
+                    metaData = "",
+                    failureReason = ""
+                ) else null
+            ,
+            onAction = {},
+            navigateTo = {},
+            triggerAd = adViewModel::triggerAdBeforeAction,
+            modifier = Modifier
+        )
     }
 }
