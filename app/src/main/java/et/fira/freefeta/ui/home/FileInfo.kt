@@ -1,14 +1,10 @@
 package et.fira.freefeta.ui.home
 
 import android.net.Uri
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -17,12 +13,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -33,11 +25,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImagePainter
-import coil3.compose.SubcomposeAsyncImage
-import coil3.compose.SubcomposeAsyncImageContent
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import com.ketch.DownloadModel
 import com.ketch.Status
 import et.fira.freefeta.R
@@ -65,156 +52,92 @@ fun FileInfoView(
         verticalAlignment = Alignment.Top,
         modifier = modifier
     ) {
-        Box(
-            modifier = Modifier
-                .size(64.dp)
-                .clickable(
-                    onClick = {
-                        if (downloadModel != null) {
-                            if (downloadModel.status == Status.SUCCESS) {
-                                if (file.isPlayable) {
-                                    triggerAd {
-                                        onAction(DownloadAction.Play(
-                                            onPlay = {
-                                                val encodedFilePath =
-                                                    Uri.encode("${downloadModel.path}/${downloadModel.fileName}")
-                                                navigateTo("${PlayerDestination.route}/$encodedFilePath")
-                                            }
-                                        ))
+        ThumbnailImage(
+            url = file.thumbnailUlr,
+            placeholder = file.icon,
+            onClick = {
+                if (downloadModel != null) {
+                    if (downloadModel.status == Status.SUCCESS) {
+                        if (file.isPlayable) {
+                            triggerAd {
+                                onAction(DownloadAction.Play(
+                                    onPlay = {
+                                        val encodedFilePath =
+                                            Uri.encode("${downloadModel.path}/${downloadModel.fileName}")
+                                        navigateTo("${PlayerDestination.route}/$encodedFilePath")
                                     }
-                                } else {
-                                    onAction(DownloadAction.Open(context, downloadModel))
-                                }
-
+                                ))
                             }
                         } else {
-                            onAction(DownloadAction.Download(context, file))
+                            onAction(DownloadAction.Open(context, downloadModel))
                         }
+
                     }
-                )
-        ){
-            if (file.thumbnailUlr != null) {
-                SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(file.thumbnailUlr)
-                        .crossfade(true)
-                        .build(),
-//                    error = {
-//                        Image(
-//                            painter = painterResource(file.icon),
-//                            contentDescription = null,
-//                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-//                            modifier = Modifier.fillMaxSize()
-//
-//                        )
-//                    },
-//                    loading = {
-//                        Image(
-//                            painter = painterResource(R.drawable.loading_img),
-//                            contentDescription = null,
-//                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-//                            modifier = Modifier.fillMaxSize()
-//
-//                        )
-//                    },
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    val state by painter.state.collectAsState()
-                    if (state is AsyncImagePainter.State.Success) {
-                        SubcomposeAsyncImageContent(
-                            contentScale = ContentScale.Crop,
-                        )
-                    } else if (state is AsyncImagePainter.State.Loading) {
-                        Image(
-                            painter = painterResource(R.drawable.loading_img),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop,
-                        )
-                    } else {
-                        Image(
-                            painter = painterResource(file.icon),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop,
-                            )
-//                        CircularProgressIndicator()
-                    }
+                } else {
+                    onAction(DownloadAction.Download(context, file))
                 }
-            } else {
-                Image(
-                    painter = painterResource(file.icon),
-                    contentScale = ContentScale.Crop,
-                    contentDescription = null,
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                    modifier = Modifier.fillMaxSize()
-
-                )
             }
-        }
-        Spacer(Modifier.width(12.dp))
-        Column {
-            Text(
-                text = file.name,
-//                style = MaterialTheme.typography.displaySmall,
-                fontFamily = FontFamily.SansSerif,
-                fontWeight = FontWeight.Normal,
-                fontSize = 16.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Spacer(Modifier.height(8.dp))
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-//                    .padding(horizontal = 16.dp)
-            ) {
-                Column {
-                    if (file.runtime != null) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.time_icon),
-                                contentDescription = stringResource(R.string.duration),
-                                //                    tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Text(
-                                text = file.runtime,
-                                fontSize = 12.sp
-                            )
-                        }
-                    }
-
-                    Text(
-                        text = file.size?.uppercase() ?: "",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontStyle = FontStyle.Italic,
-                        fontSize = 12.sp
-                    )
-                }
-
-                Spacer(Modifier.weight(1f))
-
-                FileActionView(
-                    file = file,
-                    downloadModel = downloadModel,
-                    onAction = onAction,
-                    navigateTo = navigateTo,
-                    triggerAd = triggerAd,
-//                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
+        )
 
     }
+    Spacer(Modifier.width(12.dp))
+    Column {
+        Text(
+            text = file.name,
+//                style = MaterialTheme.typography.displaySmall,
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.Normal,
+            fontSize = 16.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Spacer(Modifier.height(8.dp))
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+//                    .padding(horizontal = 16.dp)
+        ) {
+            Column {
+                if (file.runtime != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.time_icon),
+                            contentDescription = stringResource(R.string.duration),
+                            //                    tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = file.runtime,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+
+                Text(
+                    text = file.size?.uppercase() ?: "",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontStyle = FontStyle.Italic,
+                    fontSize = 12.sp
+                )
+            }
+
+            Spacer(Modifier.weight(1f))
+
+            FileActionView(
+                file = file,
+                downloadModel = downloadModel,
+                onAction = onAction,
+                navigateTo = navigateTo,
+                triggerAd = triggerAd,
+//                    modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+
 }
 
 
@@ -224,32 +147,31 @@ private fun FileInfoPreview() {
     val adViewModel = AdViewModel(FakeAddRepo());
     FreeFetaTheme {
         FileInfoView(
-                file = FileEntity(
-                    id = 1,
-                    fileType = FileType.VIDEO,
-                    name = "Top Gun: Mavrick smth",
-                    downloadUrl = "",
-                    size = "1MB",
-                    runtime = "1h 34min",
-                ),
-                downloadModel = if (true) DownloadModel(
-                    url = "",
-                    path = "",
-                    fileName = "",
-                    tag = "",
-                    id = 1,
-                    headers = hashMapOf(),
-                    timeQueued = 1,
-                    status = Status.PROGRESS,
-                    total = 1024*1024,
-                    progress = 50,
-                    speedInBytePerMs = 1024 * 1024 / 1000f,
-                    lastModified = 11,
-                    eTag = "",
-                    metaData = "",
-                    failureReason = ""
-                ) else null
-            ,
+            file = FileEntity(
+                id = 1,
+                fileType = FileType.VIDEO,
+                name = "Top Gun: Mavrick smth",
+                downloadUrl = "",
+                size = "1MB",
+                runtime = "1h 34min",
+            ),
+            downloadModel = if (true) DownloadModel(
+                url = "",
+                path = "",
+                fileName = "",
+                tag = "",
+                id = 1,
+                headers = hashMapOf(),
+                timeQueued = 1,
+                status = Status.PROGRESS,
+                total = 1024 * 1024,
+                progress = 50,
+                speedInBytePerMs = 1024 * 1024 / 1000f,
+                lastModified = 11,
+                eTag = "",
+                metaData = "",
+                failureReason = ""
+            ) else null,
             onAction = {},
             navigateTo = {},
             triggerAd = adViewModel::triggerAdBeforeAction,
