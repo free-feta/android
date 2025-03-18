@@ -18,15 +18,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ketch.DownloadModel
 import com.ketch.Status
 import et.fira.freefeta.R
+import et.fira.freefeta.data.ad.AdRepository
+import et.fira.freefeta.model.Advertisement
+import et.fira.freefeta.model.FileEntity
+import et.fira.freefeta.model.FileType
+import et.fira.freefeta.ui.ad.AdViewModel
+import et.fira.freefeta.ui.theme.FreeFetaTheme
+import kotlinx.coroutines.flow.Flow
 import kotlin.reflect.KFunction1
 
 @Composable
 fun DownloadItem(
-    downloadItem: DownloadItem,
+    downloadItemData: DownloadItemData,
     onAction: (DownloadAction) -> Unit,
     navigateTo: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -36,8 +45,8 @@ fun DownloadItem(
 //    val alpha = remember { Animatable(0f) }
 //
 //    // Animate from transparent to full visibility when recomposed
-//    LaunchedEffect(downloadItem) {
-////        Log.d("DownloadView", "DownloadItem: $downloadItem")
+//    LaunchedEffect(downloadItemData) {
+////        Log.d("DownloadView", "DownloadItem: $downloadItemData")
 //        alpha.snapTo(1f)
 //        alpha.animateTo(0f, animationSpec = tween(500))
 //    }
@@ -47,8 +56,8 @@ fun DownloadItem(
             .padding(8.dp)
             .animateContentSize()
     ) {
-        Column {
-            Box(
+        Box{
+            Column(
                 Modifier
                     .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 0.dp)
             ) {
@@ -57,61 +66,66 @@ fun DownloadItem(
                         .padding(end = 8.dp)
                 ) {
                     FileInfoView(
-                        file = downloadItem.file,
-                        downloadModel = downloadItem.downloadModel,
+                        file = downloadItemData.file,
+                        downloadModel = downloadItemData.downloadModel,
                         onAction = onAction,
                         navigateTo = navigateTo,
                         triggerAd = triggerAd,
                         modifier = Modifier
                     )
 
-                    if (downloadItem.downloadModel != null && downloadItem.downloadModel.status == Status.PROGRESS) {
+                    if (downloadItemData.downloadModel != null && downloadItemData.downloadModel.status == Status.PROGRESS) {
                         DownloadStatusView(
-                            downloadModel = downloadItem.downloadModel,
+                            downloadModel = downloadItemData.downloadModel,
                             modifier = Modifier
                         )
                     }
 
                 }
-                if (downloadItem.file.isNew) {
-                    Badge(stringResource(R.string.badge_new))
+
+                if (downloadItemData.downloadModel != null &&
+                    downloadItemData.downloadModel.status != Status.DEFAULT
+                ) {
+                    Spacer(Modifier.height(4.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 4.dp, end = 2.dp, bottom = 2.dp)
+                    ) {
+                        Text(
+                            text = when (downloadItemData.downloadModel.status) {
+                                Status.QUEUED -> stringResource(R.string.queued)
+                                Status.STARTED -> stringResource(R.string.started)
+                                Status.PROGRESS -> stringResource(R.string.downloading)
+                                Status.SUCCESS -> stringResource(R.string.finished)
+                                Status.CANCELLED -> stringResource(R.string.cancelled)
+                                Status.FAILED -> stringResource(
+                                    R.string.failed,
+                                    downloadItemData.downloadModel.failureReason
+                                        .replace("telebirr", "freefeta", true)
+                                        .replace("chat", "storage", true)
+                                        .replace("superapp", "freefeta", true)
+                                        .replace("ethiomobilemoney", "free-bucket", true)
+                                        .replace("superapp", "storage", true)
+                                        .replace("ethiotelecom", "freefeta", true)
+                                        .replace("21006", "443", true)
+                                        .replace("196.", "74.", true)
+                                )
+
+                                Status.PAUSED -> stringResource(R.string.paused)
+                                Status.DEFAULT -> ""
+                            },
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                } else {
+                    Spacer(Modifier.height(8.dp))
                 }
+
             }
-            Spacer(Modifier.height(4.dp))
-            Row(
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 4.dp, end = 2.dp, bottom = 2.dp)
-            ) {
-                Text(
-                    text = if (downloadItem.downloadModel == null) {
-                        ""
-                    } else {
-                        when(downloadItem.downloadModel.status) {
-                            Status.QUEUED -> stringResource(R.string.queued)
-                            Status.STARTED -> stringResource(R.string.started)
-                            Status.PROGRESS -> stringResource(R.string.downloading)
-                            Status.SUCCESS -> stringResource(R.string.finished)
-                            Status.CANCELLED -> stringResource(R.string.cancelled)
-                            Status.FAILED -> stringResource(
-                                R.string.failed,
-                                downloadItem.downloadModel.failureReason
-                                    .replace("telebirr", "freefeta", true)
-                                    .replace("chat", "storage", true)
-                                    .replace("superapp", "freefeta", true)
-                                    .replace("ethiomobilemoney", "free-bucket", true)
-                                    .replace("superapp", "storage", true)
-                                    .replace("ethiotelecom", "freefeta", true)
-                                    .replace("21006", "443", true)
-                                    .replace("196.", "74.", true)
-                            )
-                            Status.PAUSED -> stringResource(R.string.paused)
-                            Status.DEFAULT -> ""
-                        }
-                    },
-                    style = MaterialTheme.typography.labelMedium
-                )
+            if (downloadItemData.file.isNew) {
+                Badge(stringResource(R.string.badge_new))
             }
         }
     }
@@ -125,8 +139,7 @@ fun Badge(text: String) {
             .background(
                 MaterialTheme.colorScheme.tertiaryContainer,
                 shape = RoundedCornerShape(bottomEnd = 8.dp)
-            )
-        ,
+            ),
         contentAlignment = Alignment.Center
     ) {
         Text(
