@@ -28,6 +28,25 @@ android {
             )
         }
     }
+
+    flavorDimensions += "version"
+    productFlavors {
+        create("development") {
+            dimension = "version"
+            applicationIdSuffix = ".dev"
+            isDefault = true
+        }
+
+        create("beta") {
+            dimension = "version"
+            applicationIdSuffix = ".beta"
+        }
+
+        create("production") {
+            dimension = "version"
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
