@@ -29,7 +29,7 @@ import kotlin.reflect.KSuspendFunction0
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun DownloadList(
-    groupedDownloadItemList: Map<String, List<DownloadItem>>,
+    groupedDownloadItemList: Map<String, List<DownloadItemData>>,
     onAction: (DownloadAction) -> Unit,
     fetchNewFiles: KSuspendFunction0<Int>,
     navigateTo: (String) -> Unit,
@@ -83,7 +83,7 @@ fun DownloadList(
                     key = {item -> item.file.id}
                 ) {
                     DownloadItem(
-                        downloadItem = it,
+                        downloadItemData = it,
                         onAction = onAction,
                         navigateTo = navigateTo,
                         triggerAd = triggerAd,
