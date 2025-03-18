@@ -69,25 +69,3 @@ fun DownloadStatusView(
         )
     }
 }
-
-@Composable
-fun Badge(text: String) {
-    Box(
-        modifier = Modifier
-//            .size(40.dp)
-            .background(
-                MaterialTheme.colorScheme.tertiaryContainer,
-                shape = RoundedCornerShape(bottomEnd = 8.dp)
-            )
-        ,
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = text,
-            color = MaterialTheme.colorScheme.onTertiaryContainer,
-            style = MaterialTheme.typography.labelSmall,
-            fontSize = 12.sp,
-            modifier = Modifier.padding(2.dp)
-        )
-    }
-}
