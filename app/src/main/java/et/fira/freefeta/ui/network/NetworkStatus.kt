@@ -16,6 +16,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RichTooltip
+import androidx.compose.material3.RichTooltipColors
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TooltipBox
@@ -31,6 +32,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import et.fira.freefeta.network.NetworkState
@@ -120,17 +122,23 @@ fun RippleDotWithTooltip(
                 positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
                 tooltip = {
                     RichTooltip(
-                        title = { Text(state.getStatusData().title) },
+                        title = { Text(state.getStatusData().title, fontWeight = FontWeight.Bold) },
                         action = {
                             TextButton(onClick = { scope.launch { tooltipState.dismiss() } }) {
                                 Text("Dismiss")
                             }
-                        }
+                        },
+                        colors = RichTooltipColors(
+                            MaterialTheme.colorScheme.secondaryContainer,
+                            MaterialTheme.colorScheme.onSecondaryContainer,
+                            MaterialTheme.colorScheme.onSecondaryContainer,
+                            MaterialTheme.colorScheme.onSecondaryContainer
+                        )
                     ) {
                         Text(state.getStatusData().description)
                     }
                 },
-                state = tooltipState
+                state = tooltipState,
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Info,
