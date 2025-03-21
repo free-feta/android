@@ -95,6 +95,46 @@ fun HomeScreen(
         Column(
             modifier = Modifier.padding(contentPadding)
         ) {
+            // Show filter chips when filter is active
+            AnimatedVisibility(visible = isFilterActive) {
+                Column {
+                    // File Type Filters
+                    CategoryHeader("File Types")
+                    FilterChipsRow(
+                        categories = availableFileTypes.map { it.name },
+                        selectedCategory = selectedFileType?.name,
+                        onCategorySelected = { categoryName ->
+                            val fileType = FileType.valueOf(categoryName)
+                            searchViewModel.toggleFileTypeFilter(fileType)
+                        }
+                    )
+
+                    // Media Type Filters (if available)
+                    if (availableMediaTypes.isNotEmpty()) {
+                        CategoryHeader("Media Types")
+                        FilterChipsRow(
+                            categories = availableMediaTypes.map { it.name },
+                            selectedCategory = selectedMediaType?.name,
+                            onCategorySelected = { categoryName ->
+                                val mediaType = MediaType.valueOf(categoryName)
+                                searchViewModel.toggleMediaTypeFilter(mediaType)
+                            }
+                        )
+                    }
+
+                    // Clear filters button
+                    if (selectedFileType != null || selectedMediaType != null) {
+                        TextButton(
+                            onClick = { searchViewModel.clearFilters() },
+                            modifier = Modifier.align(Alignment.End).padding(end = 16.dp)
+                        ) {
+                            Text("Clear Filters")
+                        }
+                    }
+
+                    HorizontalDivider()
+                }
+            }
             FilePermissionHandler()
             if (showDeleteDialog) {
                 DeleteConfirmationDialog(
