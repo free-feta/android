@@ -62,6 +62,9 @@ fun HomeScreen(
     navigateTo: (String) -> Unit,
     viewModel: HomeViewModel,
     adViewModel: AdViewModel,
+    networkState: NetworkState,
+    restartNetworkStateMonitoring: KFunction0<Unit>,
+    searchViewModel: SearchViewModel
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val showDeleteDialog by viewModel.showDeleteDialog.collectAsStateWithLifecycle()
