@@ -24,7 +24,6 @@ import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,25 +33,115 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import et.fira.freefeta.network.NetworkState
 import et.fira.freefeta.network.getStatusData
-import et.fira.freefeta.ui.AppViewModelProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.reflect.KFunction0
 
 @Composable
 fun NetworkStatusView(
     modifier: Modifier = Modifier,
-    viewModel: NetworkStatusViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    state: NetworkState = NetworkState.NoInternet,
+    restartNetworkStateMonitoring: KFunction0<Unit>
 ) {
-    val state by viewModel.networkState.collectAsState()
-    RippleDotWithTooltip(
+//    RippleDotWithTooltip(
+//        state = state,
+//        modifier = modifier
+//    )
+    HeartbeatIconWithTooltip(
         state = state,
-        modifier = modifier
-    )
+        restartNetworkStateMonitoring = restartNetworkStateMonitoring,
+        modifier = modifier)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HeartbeatIconWithTooltip(
+    state: NetworkState,
+    modifier: Modifier = Modifier,
+    restartNetworkStateMonitoring: KFunction0<Unit>
+) {
+    var isAnimationActive by remember { mutableStateOf(true) }
+
+    val transition = rememberInfiniteTransition()
+    val tooltipState = rememberTooltipState(isPersistent = true)
+    val scope = rememberCoroutineScope()
+
+    // Animate icon size with a shrinking heartbeat effect
+    val scale by transition.animateFloat(
+        initialValue = 1f,
+        targetValue = if (isAnimationActive) 0.7f else 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 600),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    LaunchedEffect(state) {
+        isAnimationActive = true
+    }
+
+    // Stop animation after 3 seconds
+    LaunchedEffect(isAnimationActive) {
+        if (isAnimationActive) {
+            delay(3000)
+            isAnimationActive = false
+        }
+    }
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .clickable {
+                isAnimationActive = true
+            }
+    ) {
+        TooltipBox(
+            positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+            tooltip = {
+                RichTooltip(
+                    title = { Text(state.getStatusData().title, fontWeight = FontWeight.Bold) },
+                    action = {
+                        TextButton(onClick = { scope.launch { tooltipState.dismiss() } }) {
+                            Text("Dismiss")
+                        }
+                    },
+                    colors = RichTooltipColors(
+                        MaterialTheme.colorScheme.secondaryContainer,
+                        MaterialTheme.colorScheme.onSecondaryContainer,
+                        MaterialTheme.colorScheme.onSecondaryContainer,
+                        MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                ) {
+                    Text(state.getStatusData().description)
+                }
+            },
+            state = tooltipState,
+        ) {
+            // Fixed size container to prevent layout shifts
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Info,
+                    contentDescription = "Network status",
+                    modifier = Modifier
+                        .size(32.dp * (if (isAnimationActive) scale else 1f))
+                        .clickable {
+                            isAnimationActive = true
+                            scope.launch {
+                                tooltipState.show()
+                                restartNetworkStateMonitoring()
+                            }
+                        },
+                    tint = state.getStatusData().color
+                )
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -144,7 +233,7 @@ fun RippleDotWithTooltip(
                     imageVector = Icons.Outlined.Info,
                     contentDescription = "Network status",
                     modifier = Modifier
-                        .size(28.dp)
+                        .size(32.dp)
                         .clickable {
                         isRippleActive = true
                         scope.launch {
