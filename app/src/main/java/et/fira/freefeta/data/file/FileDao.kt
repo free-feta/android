@@ -7,6 +7,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import et.fira.freefeta.model.FileEntity
+import et.fira.freefeta.model.FileType
+import et.fira.freefeta.model.MediaType
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -37,6 +39,25 @@ interface FileDao {
 
     @Query("SELECT * from files ORDER BY created_at DESC")
     fun getAllFilesFlow(): Flow<List<FileEntity>>
+
+    @Query("""
+        SELECT * FROM files 
+        WHERE (name LIKE '%' || :query || '%' OR folder_name LIKE '%' || :query || '%')
+        AND (:fileType IS NULL OR file_type = :fileType)
+        AND (:mediaType IS NULL OR media_type = :mediaType)
+        ORDER BY name ASC
+    """)
+    fun searchFiles(
+        query: String = "",
+        fileType: FileType? = null,
+        mediaType: MediaType? = null
+    ): Flow<List<FileEntity>>
+
+    @Query("SELECT DISTINCT file_type FROM files")
+    fun getAllFileTypes(): Flow<List<FileType>>
+
+    @Query("SELECT DISTINCT media_type FROM files WHERE media_type IS NOT NULL")
+    fun getAllMediaTypes(): Flow<List<MediaType>>
 
 
 
