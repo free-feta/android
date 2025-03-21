@@ -5,17 +5,18 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import et.fira.freefeta.data.ResizeMode
-import et.fira.freefeta.data.SyncUpdateRepository
 import et.fira.freefeta.data.ThemeMode
 import et.fira.freefeta.data.UserPreferencesRepository
 import et.fira.freefeta.data.config.AppConfigRepository
 import et.fira.freefeta.ui.update.getInstalledVersion
 import et.fira.freefeta.util.Util.isVersionOlder
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SettingsViewModel(
     private val userPreferencesRepository: UserPreferencesRepository,
@@ -62,21 +63,24 @@ class SettingsViewModel(
 
     fun checkForUpdate(context: Context) {
         viewModelScope.launch {
-            Toast.makeText(context, "Checking for updates", Toast.LENGTH_SHORT).show()
-            configRepository.getConfig().let { config ->
-                val installedVersion = context.getInstalledVersion()
-                if (config != null) {
-                    when {
-                        isVersionOlder(installedVersion, config.minimumVersion) ||
-                        isVersionOlder(installedVersion, config.latestVersion) -> {
-                            Toast.makeText(context, "Update available", Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.IO) {
+                Toast.makeText(context, "Checking for updates", Toast.LENGTH_SHORT).show()
+                configRepository.getConfig().let { config ->
+                    val installedVersion = context.getInstalledVersion()
+                    if (config != null) {
+                        when {
+                            isVersionOlder(installedVersion, config.minimumVersion) ||
+                                    isVersionOlder(installedVersion, config.latestVersion) -> {
+                                Toast.makeText(context, "Update available", Toast.LENGTH_SHORT).show()
+                            }
+                            else -> Toast.makeText(context, "No update available", Toast.LENGTH_SHORT).show()
                         }
-                        else -> Toast.makeText(context, "No update available", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "Failed to fetch update", Toast.LENGTH_SHORT).show()
                     }
-                } else {
-                    Toast.makeText(context, "Failed to fetch update", Toast.LENGTH_SHORT).show()
                 }
             }
+
         }
     }
 }
