@@ -6,7 +6,7 @@ object AppConstants {
     }
 
     object Network {
-        const val ZERO_RATING_URL = "https://telebirrchat.ethiomobilemoney.et:21006/sfs/ufile?digest=fid5e4d5ff5bb0f20b7e70ec3d0bb01d1d2&filename=Khalid+-+Young+Dumb+_+Broke+(Lyrics)(720P_HD).mp4"
+        const val ZERO_RATING_URL = " https://supperapp-chat-prod.obsv3.et-global-1.ethiotelecom.et"
         val HEADER_FOR_ZERO_RATING_URL = hashMapOf(
             "appid" to "1012673623603201",
             "access-token" to "34A1367993D9409639D081B3A91159D37FD5DF999E2B97C8C822F92E44DE6A65",
@@ -26,6 +26,11 @@ object AppConstants {
         const val UPDATE_SYNC_CHANNEL_ID = "UPDATE_SYNC_NOTIFICATION"
 
         const val UPDATE_SYNC_WORK_NAME = "UPDATE_SYNC_WORK"
+    }
 
+    object About {
+        const val APP_TG_CHANNEL = "https://t.me/FreeFeta"
+        const val DEVELOPER_TG_ACC = "https://t.me/fira_xd"
+        const val DEVELOPER_EMAIL = "firaoldebebe7@gmail.com"
     }
 }
