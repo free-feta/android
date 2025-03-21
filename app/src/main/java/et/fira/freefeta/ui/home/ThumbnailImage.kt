@@ -2,10 +2,12 @@ package et.fira.freefeta.ui.home
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -28,8 +30,8 @@ fun ThumbnailImage(
     url: String?,
     @DrawableRes
     placeholder: Int,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Box(
         modifier = Modifier
@@ -46,30 +48,36 @@ fun ThumbnailImage(
                     .build(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = modifier.fillMaxSize()
+
             ) {
                 val state by painter.state.collectAsState()
-                if (state is AsyncImagePainter.State.Success) {
-                    SubcomposeAsyncImageContent(
-                        contentScale = ContentScale.Crop,
-                    )
-                } else if (state is AsyncImagePainter.State.Loading) {
-                    Image(
-                        painter = painterResource(R.drawable.loading_img),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(placeholder),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                    )
-//                        CircularProgressIndicator()
+                when (state) {
+                    is AsyncImagePainter.State.Success -> {
+                        SubcomposeAsyncImageContent(
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
+
+                    is AsyncImagePainter.State.Loading -> {
+                        Image(
+                            painter = painterResource(R.drawable.loading_img),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
+
+                    else -> {
+                        Image(
+                            painter = painterResource(placeholder),
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                        )
+            //                        CircularProgressIndicator()
+                    }
                 }
             }
         } else {
