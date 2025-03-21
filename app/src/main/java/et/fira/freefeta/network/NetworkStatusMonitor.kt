@@ -80,19 +80,16 @@ class NetworkStatusMonitor(
                 var connection: HttpURLConnection? = null
                 try {
                     connection = URL(url).openConnection() as HttpURLConnection
-                    if (url == zeroRatingUrl) {
-                        connection.requestMethod = "GET"
-                    } else {
-                        connection.requestMethod = "HEAD"
-                    }
+                    connection.requestMethod = "HEAD"
+
                     connection.connectTimeout = 3000
                     connection.readTimeout = 3000
+
                     if (url == zeroRatingUrl) {
-                        for (header in AppConstants.Network.HEADER_FOR_ZERO_RATING_URL) {
-                            connection.setRequestProperty(header.key, header.value)
-                        }
+                        connection.responseCode == 404 || connection.responseCode == 200
+                    } else {
+                        connection.responseCode == 200
                     }
-                    connection.responseCode == 200
 
                 } finally {
                     connection?.disconnect()
