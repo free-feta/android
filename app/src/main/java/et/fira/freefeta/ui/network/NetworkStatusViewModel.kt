@@ -7,9 +7,12 @@ import androidx.lifecycle.viewModelScope
 import et.fira.freefeta.FreeFetaApplication
 import et.fira.freefeta.network.NetworkState
 import et.fira.freefeta.network.NetworkStatusMonitor
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.cancellation.CancellationException
 
 class NetworkStatusViewModel(
     application: Application
@@ -33,8 +36,22 @@ class NetworkStatusViewModel(
         }
     }
 
+    fun restartMonitoring() {
+        networkMonitor.stopMonitoring()
+        networkMonitor.startMonitoring()
+    }
+
     private suspend fun sendAnalytics() {
-        deviceAnalyticsRepo.sendAnalytics()
+        withContext(Dispatchers.IO) {
+            try {
+                deviceAnalyticsRepo.sendAnalytics()
+            } catch (e: Exception) {
+                if (e is CancellationException) {
+                    throw e
+                }
+                e.printStackTrace()
+            }
+        }
     }
 
     override fun onCleared() {
