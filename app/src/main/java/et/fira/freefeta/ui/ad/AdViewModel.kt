@@ -6,7 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import et.fira.freefeta.data.ad.AdRepository
 import et.fira.freefeta.model.Advertisement
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AdViewModel(
     private val adRepository: AdRepository
@@ -18,9 +20,11 @@ class AdViewModel(
 
     init {
         viewModelScope.launch {
-            adRepository.syncNewAds()
+            withContext(Dispatchers.IO) {
+                adRepository.syncNewAds()
+                showInitialAd()
+            }
         }
-        showInitialAd()
     }
 
     private fun showInitialAd() {
