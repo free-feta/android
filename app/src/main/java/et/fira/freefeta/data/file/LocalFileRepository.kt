@@ -1,6 +1,8 @@
 package et.fira.freefeta.data.file
 
 import et.fira.freefeta.model.FileEntity
+import et.fira.freefeta.model.FileType
+import et.fira.freefeta.model.MediaType
 import kotlinx.coroutines.flow.Flow
 
 interface LocalFileRepository {
@@ -41,4 +43,14 @@ interface LocalFileRepository {
     suspend fun updateFile(fileEntity: FileEntity)
 
     suspend fun updateFileDownloadId(fileId: Int, newFileDownloadId: Int?)
+
+    fun searchFiles(
+        query: String = "",
+        fileType: FileType? = null,
+        mediaType: MediaType? = null
+    ): Flow<List<FileEntity>>
+
+    fun getAllFileTypes(): Flow<List<FileType>>
+
+    fun getAllMediaTypes(): Flow<List<MediaType>>
 }

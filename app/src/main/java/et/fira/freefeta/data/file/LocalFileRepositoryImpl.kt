@@ -1,6 +1,8 @@
 package et.fira.freefeta.data.file
 
 import et.fira.freefeta.model.FileEntity
+import et.fira.freefeta.model.FileType
+import et.fira.freefeta.model.MediaType
 import kotlinx.coroutines.flow.Flow
 
 class LocalFileRepositoryImpl(
@@ -19,5 +21,18 @@ class LocalFileRepositoryImpl(
 
     override suspend fun updateFile(fileEntity: FileEntity) = fileDao.updateFile(fileEntity)
     override suspend fun updateFileDownloadId(fileId: Int, newFileDownloadId: Int?) = fileDao.updateFileDownloadId(fileId, newFileDownloadId)
+
+    override fun searchFiles(
+        query: String,
+        fileType: FileType?,
+        mediaType: MediaType?
+    ): Flow<List<FileEntity>> {
+        return fileDao.searchFiles(query, fileType, mediaType)
+    }
+
+    override fun getAllFileTypes(): Flow<List<FileType>> = fileDao.getAllFileTypes()
+
+    override fun getAllMediaTypes(): Flow<List<MediaType>> = fileDao.getAllMediaTypes()
+
 
 }
