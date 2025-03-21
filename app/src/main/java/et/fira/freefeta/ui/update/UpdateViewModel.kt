@@ -16,11 +16,13 @@ import et.fira.freefeta.model.AppConfig
 import et.fira.freefeta.util.Util.isVersionOlder
 import et.fira.freefeta.util.createAndCheckFolder
 import et.fira.freefeta.util.hasFilePermission
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class UpdateViewModel(
@@ -35,29 +37,32 @@ class UpdateViewModel(
     fun checkForUpdate(context: Context) {
         checkForDownloaderJob?.cancel()
         checkForDownloaderJob = viewModelScope.launch {
-            configRepository.syncConfig()
-            configRepository.getConfigStream().collect {config ->
+            withContext(Dispatchers.IO) {
+                configRepository.syncConfig()
+                configRepository.getConfigStream().collect {config ->
 
-                config?.let { appConfig ->
-                    _uiState.value = _uiState.value.copy(config = appConfig)
-                    val installedVersion = context.getInstalledVersion()
+                    config?.let { appConfig ->
+                        _uiState.value = _uiState.value.copy(config = appConfig)
+                        val installedVersion = context.getInstalledVersion()
 
-                    when {
-                        isVersionOlder(installedVersion, config.minimumVersion) -> {
-                            _uiState.value =
-                                _uiState.value.copy(showUpdateDialog = true, forceUpdate = true)
+                        when {
+                            isVersionOlder(installedVersion, config.minimumVersion) -> {
+                                _uiState.value =
+                                    _uiState.value.copy(showUpdateDialog = true, forceUpdate = true)
+                            }
+                            isVersionOlder(installedVersion, config.latestVersion) -> {
+                                _uiState.value =
+                                    _uiState.value.copy(showUpdateDialog = true, forceUpdate = false)
+                            }
+                            !config.isServiceOk -> {
+                                _uiState.value = _uiState.value.copy(showUpdateDialog = true, forceUpdate = false)
+                            }
+                            else -> _uiState.value = _uiState.value.copy(showUpdateDialog = false)
                         }
-                        isVersionOlder(installedVersion, config.latestVersion) -> {
-                            _uiState.value =
-                                _uiState.value.copy(showUpdateDialog = true, forceUpdate = false)
-                        }
-                        !config.isServiceOk -> {
-                            _uiState.value = _uiState.value.copy(showUpdateDialog = true, forceUpdate = false)
-                        }
-                        else -> _uiState.value = _uiState.value.copy(showUpdateDialog = false)
                     }
                 }
             }
+
         }
     }
 
