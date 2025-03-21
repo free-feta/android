@@ -1,8 +1,8 @@
 package et.fira.freefeta.ui.home
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,25 +10,25 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -37,21 +37,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ketch.DownloadModel
-import com.ketch.Status
 import et.fira.freefeta.R
-import et.fira.freefeta.model.FileEntity
+import et.fira.freefeta.model.FileType
+import et.fira.freefeta.model.MediaType
+import et.fira.freefeta.network.NetworkState
 import et.fira.freefeta.ui.AppDestinations
 import et.fira.freefeta.ui.FilePermissionHandler
 import et.fira.freefeta.ui.ad.AdViewModel
 import et.fira.freefeta.ui.navigation.NavigationDestination
-import et.fira.freefeta.ui.network.NetworkStatusView
+import et.fira.freefeta.ui.search.CategoryHeader
+import et.fira.freefeta.ui.search.FilterChipsRow
+import et.fira.freefeta.ui.search.SearchViewModel
+import et.fira.freefeta.ui.search.TopBarWithSearch
 import et.fira.freefeta.ui.theme.FreeFetaTheme
 import kotlinx.coroutines.launch
+import kotlin.reflect.KFunction0
 import kotlin.reflect.KFunction1
 import kotlin.reflect.KSuspendFunction0
 
-object HomeDestination: NavigationDestination {
+object HomeDestination : NavigationDestination {
     override val route = "home"
     override val titleRes = R.string.home_screen_title
 }
@@ -142,7 +146,7 @@ fun HomeScreen(
             if (showDeleteDialog) {
                 DeleteConfirmationDialog(
                     onConfirm = { neverShow ->
-                        viewModel.downloadAction( DownloadAction.ConfirmDelete(neverShow))
+                        viewModel.downloadAction(DownloadAction.ConfirmDelete(neverShow))
                     },
                     onDismiss = {
                         viewModel.downloadAction(DownloadAction.DismissDelete)
@@ -155,9 +159,9 @@ fun HomeScreen(
             ) {
                 if (uiState.downloadItemList.isNotEmpty()) {
                     HomeBody(
-                        downloadItemList = uiState.downloadItemList.groupBy {
+                        downloadItemList = searchResults.map { DownloadItemData(it, null) }.groupBy {
                             it.file.mediaType?.name ?: it.file.fileType.name
-                        },
+                        }.toSortedMap(),
                         onAction = viewModel::downloadAction,
                         fetchNewFiles = viewModel::fetchNewFiles,
                         navigateTo = navigateTo,
@@ -258,7 +262,7 @@ fun NavDrawer(
 ) {
     val adaptiveInfo = currentWindowAdaptiveInfo()
     val customNavSuiteType = with(adaptiveInfo) {
-        when(windowSizeClass.windowWidthSizeClass) {
+        when (windowSizeClass.windowWidthSizeClass) {
             androidx.window.core.layout.WindowWidthSizeClass.EXPANDED -> NavigationSuiteType.NavigationDrawer
             androidx.window.core.layout.WindowWidthSizeClass.MEDIUM -> NavigationSuiteType.NavigationRail
             else -> NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(adaptiveInfo)
