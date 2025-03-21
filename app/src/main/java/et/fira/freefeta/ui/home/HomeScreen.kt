@@ -67,25 +67,28 @@ fun HomeScreen(
     val showDeleteDialog by viewModel.showDeleteDialog.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+    val searchQuery by searchViewModel.searchQuery.collectAsState()
+    val selectedFileType by searchViewModel.selectedFileType.collectAsState()
+    val selectedMediaType by searchViewModel.selectedMediaType.collectAsState()
+    val availableFileTypes by searchViewModel.availableFileTypes.collectAsState()
+    val availableMediaTypes by searchViewModel.availableMediaTypes.collectAsState()
+    val searchResults by searchViewModel.searchResults.collectAsState()
+
+    var isSearchActive by remember { mutableStateOf(false) }
+    var isFilterActive by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Box {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.Center)
-                        ) {
-                            Text("Free", style = MaterialTheme.typography.displayMedium)
-                            Icon(Icons.Default.PlayArrow, null, tint = MaterialTheme.colorScheme.primaryContainer)
-                            Text("Feta", style = MaterialTheme.typography.displayMedium)
-                        }
-                        NetworkStatusView(modifier = Modifier.align(Alignment.CenterEnd))
-                    }
-                }
+            TopBarWithSearch(
+                networkState = networkState,
+                onSearchQueryChanged = { query ->
+                    searchViewModel.setSearchQuery(query)
+                },
+                isSearchActive = isSearchActive,
+                onSearchActiveChanged = { isSearchActive = it },
+                isFilterActive = isFilterActive,
+                onFilterActiveChanged = {isFilterActive = it},
+                restartNetworkStateMonitoring = restartNetworkStateMonitoring
             )
         }
     ) { contentPadding ->
