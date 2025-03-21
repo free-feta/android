@@ -15,6 +15,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -39,6 +40,7 @@ fun DownloadList(
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    var expandedFolderName by remember { mutableStateOf("") }
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -78,8 +80,37 @@ fun DownloadList(
 
                 }
 
+                val itemsWithFolder = itemList.filter {
+                    it.file.folderName != null
+                }.groupBy { itemData -> itemData.file.folderName }
+
                 items(
-                    items = itemList,
+                    items = itemsWithFolder.entries.toList(),
+                    key = {item -> item.key!!}
+                ) {
+                   FolderDownloadView(
+                       folderName = it.key!!,
+                       folderItems = it.value.reversed(),
+                       onAction = onAction,
+                       navigateTo = navigateTo,
+                       triggerAd = triggerAd,
+                       expandedFolder = expandedFolderName,
+                       onChangeExpand = {
+                           expandedFolderName = if (expandedFolderName == it.key!!) {
+                               ""
+                           } else {
+                               it.key!!
+                           }
+                       }
+                   )
+                }
+
+                val filesWithoutFolder = itemList.filter {
+                    it.file.folderName == null
+                }
+
+                items(
+                    items = filesWithoutFolder,
                     key = {item -> item.file.id}
                 ) {
                     DownloadItem(
