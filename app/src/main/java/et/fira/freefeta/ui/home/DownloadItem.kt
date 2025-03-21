@@ -12,12 +12,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,10 +41,11 @@ fun DownloadItem(
     downloadItemData: DownloadItemData,
     onAction: (DownloadAction) -> Unit,
     navigateTo: (String) -> Unit,
-    modifier: Modifier = Modifier,
     triggerAd: KFunction1<() -> Unit, Unit>,
-
-    ) {
+    modifier: Modifier = Modifier,
+    showThumbnail: Boolean = true,
+    colors: CardColors = CardDefaults.cardColors()
+) {
 //    val alpha = remember { Animatable(0f) }
 //
 //    // Animate from transparent to full visibility when recomposed
@@ -51,15 +55,18 @@ fun DownloadItem(
 //        alpha.animateTo(0f, animationSpec = tween(500))
 //    }
     Card(
+        colors = colors,
         modifier = modifier
             .fillMaxWidth()
             .padding(8.dp)
             .animateContentSize()
     ) {
-        Box{
+        Box(
+            contentAlignment = Alignment.TopEnd
+        ){
             Column(
                 Modifier
-                    .padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 0.dp)
+                    .padding(8.dp)
             ) {
                 Column(
                     Modifier
@@ -71,7 +78,7 @@ fun DownloadItem(
                         onAction = onAction,
                         navigateTo = navigateTo,
                         triggerAd = triggerAd,
-                        modifier = Modifier
+                        showThumbnail = showThumbnail,
                     )
 
                     if (downloadItemData.downloadModel != null && downloadItemData.downloadModel.status == Status.PROGRESS) {
@@ -81,46 +88,6 @@ fun DownloadItem(
                         )
                     }
 
-                }
-
-                if (downloadItemData.downloadModel != null &&
-                    downloadItemData.downloadModel.status != Status.DEFAULT
-                ) {
-                    Spacer(Modifier.height(4.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.End,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 4.dp, end = 2.dp, bottom = 2.dp)
-                    ) {
-                        Text(
-                            text = when (downloadItemData.downloadModel.status) {
-                                Status.QUEUED -> stringResource(R.string.queued)
-                                Status.STARTED -> stringResource(R.string.started)
-                                Status.PROGRESS -> stringResource(R.string.downloading)
-                                Status.SUCCESS -> stringResource(R.string.finished)
-                                Status.CANCELLED -> stringResource(R.string.cancelled)
-                                Status.FAILED -> stringResource(
-                                    R.string.failed,
-                                    downloadItemData.downloadModel.failureReason
-                                        .replace("telebirr", "freefeta", true)
-                                        .replace("chat", "storage", true)
-                                        .replace("superapp", "freefeta", true)
-                                        .replace("ethiomobilemoney", "free-bucket", true)
-                                        .replace("superapp", "storage", true)
-                                        .replace("ethiotelecom", "freefeta", true)
-                                        .replace("21006", "443", true)
-                                        .replace("196.", "74.", true)
-                                )
-
-                                Status.PAUSED -> stringResource(R.string.paused)
-                                Status.DEFAULT -> ""
-                            },
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
-                } else {
-                    Spacer(Modifier.height(8.dp))
                 }
 
             }
@@ -138,7 +105,7 @@ fun Badge(text: String) {
 //            .size(40.dp)
             .background(
                 MaterialTheme.colorScheme.tertiaryContainer,
-                shape = RoundedCornerShape(bottomEnd = 8.dp)
+                shape = RoundedCornerShape(topEnd = 8.dp)
             ),
         contentAlignment = Alignment.Center
     ) {
@@ -147,7 +114,7 @@ fun Badge(text: String) {
             color = MaterialTheme.colorScheme.onTertiaryContainer,
             style = MaterialTheme.typography.labelSmall,
             fontSize = 12.sp,
-            modifier = Modifier.padding(2.dp)
+            modifier = Modifier.padding(start = 2.dp, end = 8.dp)
         )
     }
 }

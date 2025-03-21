@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
@@ -42,8 +43,9 @@ fun FileInfoView(
     downloadModel: DownloadModel?,
     onAction: (DownloadAction) -> Unit,
     navigateTo: (String) -> Unit,
-    modifier: Modifier,
     triggerAd: KFunction1<() -> Unit, Unit>,
+    showThumbnail: Boolean,
+    modifier: Modifier = Modifier,
 
     ) {
     val context = LocalContext.current
@@ -52,35 +54,49 @@ fun FileInfoView(
         verticalAlignment = Alignment.Top,
         modifier = modifier
     ) {
-        ThumbnailImage(
-            url = file.thumbnailUlr,
-            placeholder = file.icon,
-            onClick = {
-                if (downloadModel != null) {
-                    if (downloadModel.status == Status.SUCCESS) {
-                        if (file.isPlayable) {
-                            triggerAd {
-                                onAction(DownloadAction.Play(
-                                    onPlay = {
-                                        val encodedFilePath =
-                                            Uri.encode("${downloadModel.path}/${downloadModel.fileName}")
-                                        navigateTo("${PlayerDestination.route}/$encodedFilePath")
-                                    }
-                                ))
+        if (showThumbnail) {
+            ThumbnailImage(
+                url = file.thumbnailUlr,
+                placeholder = file.icon,
+                onClick = {
+                    if (downloadModel != null) {
+                        if (downloadModel.status == Status.SUCCESS) {
+                            if (file.isPlayable) {
+                                triggerAd {
+                                    onAction(DownloadAction.Play(
+                                        onPlay = {
+                                            val encodedFilePath =
+                                                Uri.encode("${downloadModel.path}/${downloadModel.fileName}")
+                                            navigateTo("${PlayerDestination.route}/$encodedFilePath")
+                                        }
+                                    ))
+                                }
+                            } else {
+                                onAction(DownloadAction.Open(context, downloadModel))
                             }
-                        } else {
-                            onAction(DownloadAction.Open(context, downloadModel))
+
                         }
-
+                    } else {
+                        onAction(DownloadAction.Download(context, file))
                     }
-                } else {
-                    onAction(DownloadAction.Download(context, file))
                 }
-            }
-        )
+            )
+        }
 
+        Spacer(Modifier.width(12.dp))
+        FileDetailWithAction(file, downloadModel, onAction, navigateTo, triggerAd)
     }
-    Spacer(Modifier.width(12.dp))
+
+}
+
+@Composable
+fun FileDetailWithAction(
+    file: FileEntity,
+    downloadModel: DownloadModel?,
+    onAction: (DownloadAction) -> Unit,
+    navigateTo: (String) -> Unit,
+    triggerAd: KFunction1<() -> Unit, Unit>
+) {
     Column {
         Text(
             text = file.name,
@@ -99,33 +115,81 @@ fun FileInfoView(
                 .fillMaxWidth()
 //                    .padding(horizontal = 16.dp)
         ) {
-            Column {
-                if (file.runtime != null) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.time_icon),
-                            contentDescription = stringResource(R.string.duration),
-                            //                    tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp)
-                        )
+            Row(
+                modifier = Modifier.weight(1f)
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row {
+                        if (file.runtime != null) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.time_icon),
+                                    contentDescription = stringResource(R.string.duration),
+                                    //                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = file.runtime,
+                                    fontSize = 12.sp
+                                )
+                            }
+                            Spacer(Modifier.width(8.dp))
+                        }
+
                         Text(
-                            text = file.runtime,
+                            text = file.size?.uppercase() ?: "",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontStyle = FontStyle.Italic,
                             fontSize = 12.sp
                         )
                     }
-                }
+                    if (downloadModel != null &&
+                        downloadModel.status != Status.DEFAULT
+                    ) {
+//                        Spacer(Modifier.height(4.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.End,
+                            modifier = Modifier
+                                .padding(end = 4.dp)
+                        ) {
+                            Text(
+                                text = when (downloadModel.status) {
+                                    Status.QUEUED -> stringResource(R.string.queued)
+                                    Status.STARTED -> stringResource(R.string.started)
+                                    Status.PROGRESS -> stringResource(R.string.downloading)
+                                    Status.SUCCESS -> stringResource(R.string.finished)
+                                    Status.CANCELLED -> stringResource(R.string.cancelled)
+                                    Status.FAILED -> stringResource(
+                                        R.string.failed,
+                                        downloadModel.failureReason
+                                            .replace("telebirr", "freefeta", true)
+                                            .replace("chat", "storage", true)
+                                            .replace("superapp", "freefeta", true)
+                                            .replace("ethiomobilemoney", "free-bucket", true)
+                                            .replace("superapp", "storage", true)
+                                            .replace("ethiotelecom", "freefeta", true)
+                                            .replace("21006", "443", true)
+                                            .replace("196.", "74.", true)
+                                    )
 
-                Text(
-                    text = file.size?.uppercase() ?: "",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontStyle = FontStyle.Italic,
-                    fontSize = 12.sp
-                )
+                                    Status.PAUSED -> stringResource(R.string.paused)
+                                    Status.DEFAULT -> ""
+                                },
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.labelMedium,
+
+                                )
+                        }
+                    }
+                }
             }
 
-            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.width(8.dp))
 
             FileActionView(
                 file = file,
@@ -133,11 +197,10 @@ fun FileInfoView(
                 onAction = onAction,
                 navigateTo = navigateTo,
                 triggerAd = triggerAd,
-//                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.padding(2.dp)
             )
         }
     }
-
 }
 
 
@@ -175,7 +238,8 @@ private fun FileInfoPreview() {
             onAction = {},
             navigateTo = {},
             triggerAd = adViewModel::triggerAdBeforeAction,
-            modifier = Modifier
+            modifier = Modifier,
+            showThumbnail = true
         )
     }
 }

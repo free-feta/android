@@ -57,7 +57,7 @@ fun FileActionView(
     ) {
 
         if (downloadModel == null  || downloadModel.status == Status.DEFAULT) {
-            Spacer(Modifier.weight(1f))
+//            Spacer(Modifier.weight(1f))
             ActionIcon(
                 iconRes = R.drawable.download_icon,
                 contentDescription = stringResource(R.string.download),
