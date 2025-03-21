@@ -10,11 +10,18 @@ import et.fira.freefeta.ui.home.HomeViewModel
 import et.fira.freefeta.ui.network.NetworkStatusViewModel
 import et.fira.freefeta.ui.onboarding.OnboardingScreenViewModel
 import et.fira.freefeta.ui.player.PlayerViewModel
+import et.fira.freefeta.ui.search.SearchViewModel
 import et.fira.freefeta.ui.settings.SettingsViewModel
 import et.fira.freefeta.ui.update.UpdateViewModel
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
+        initializer {
+            SearchViewModel(
+                repository = freeFetaApplication().container.localFileRepository
+            )
+        }
+
         initializer {
             OnboardingScreenViewModel(
                 userPreferencesRepository = freeFetaApplication().container.userPreferencesRepository
