@@ -17,8 +17,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.DefaultTintColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -29,6 +32,7 @@ import et.fira.freefeta.R
 import et.fira.freefeta.ui.navigation.NavigationDestination
 import et.fira.freefeta.ui.theme.FreeFetaTheme
 import et.fira.freefeta.ui.update.getInstalledVersion
+import et.fira.freefeta.util.AppConstants
 
 object AboutDestination: NavigationDestination {
     override val route = "about"
@@ -162,15 +166,17 @@ fun AboutScreen(navigateBack: () -> Boolean) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    uriHandler.openUri("https://t.me/FreeFeta")
+                                    uriHandler.openUri(AppConstants.About.APP_TG_CHANNEL)
                                 }
                                 .padding(vertical = 8.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Send,
-                                contentDescription = "Telegram"
+                                painter = painterResource(R.drawable.telegram_icon),
+                                contentDescription = "Telegram",
+                                modifier = Modifier.size(28.dp),
+                                tint = Color.Unspecified
                             )
                             Text("Join our Telegram Channel")
                         }
@@ -180,7 +186,7 @@ fun AboutScreen(navigateBack: () -> Boolean) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    uriHandler.openUri("mailto:firaoldebebe7@gmail.com")
+                                    uriHandler.openUri("mailto:${AppConstants.About.DEVELOPER_EMAIL}")
                                 }
                                 .padding(vertical = 8.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -188,16 +194,16 @@ fun AboutScreen(navigateBack: () -> Boolean) {
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Email,
-                                contentDescription = "Email"
+                                contentDescription = "Email",
                             )
-                            Text("firaoldebebe7@gmail.com")
+                            Text(AppConstants.About.DEVELOPER_EMAIL)
                         }
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    uriHandler.openUri("https://t.me/fira_xd")
+                                    uriHandler.openUri(AppConstants.About.DEVELOPER_TG_ACC)
                                 }
                                 .padding(vertical = 8.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
