@@ -10,7 +10,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -24,10 +23,12 @@ import et.fira.freefeta.ui.ad.AdViewModel
 import et.fira.freefeta.ui.home.HomeDestination
 import et.fira.freefeta.ui.home.HomeScreen
 import et.fira.freefeta.ui.home.HomeViewModel
+import et.fira.freefeta.ui.network.NetworkStatusViewModel
 import et.fira.freefeta.ui.onboarding.OnboardingScreen
 import et.fira.freefeta.ui.onboarding.OnboardingScreenViewModel
 import et.fira.freefeta.ui.player.PlayerDestination
 import et.fira.freefeta.ui.player.PlayerScreen
+import et.fira.freefeta.ui.search.SearchViewModel
 import et.fira.freefeta.ui.settings.SettingsDestination
 import et.fira.freefeta.ui.settings.SettingsScreen
 import et.fira.freefeta.ui.update.AppUpdateDialog
@@ -42,7 +43,13 @@ fun FreeFetaNavHost(
 
     val adViewModel: AdViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val currentAd by adViewModel.adState
+
     val howeViewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
+
+    val networkStateViewModel: NetworkStatusViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    val networkState by networkStateViewModel.networkState.collectAsState()
+
+    val searchViewModel: SearchViewModel = viewModel(factory = AppViewModelProvider.Factory)
 
     LaunchedEffect(Unit) {
         howeViewModel.fetchNewFilesAndNotify(context)
@@ -61,6 +68,9 @@ fun FreeFetaNavHost(
                     viewModel = howeViewModel,
                     navigateTo = navController::navigate,
                     adViewModel = adViewModel,
+                    networkState = networkState,
+                    restartNetworkStateMonitoring = networkStateViewModel::restartMonitoring,
+                    searchViewModel = searchViewModel
                 )
             }
             composable(route = "${PlayerDestination.route}/{${PlayerDestination.ARG}}") { backStackEntry ->
