@@ -120,16 +120,16 @@ class HomeViewModel(
         viewModelScope.launch {
             val newFiles = fetchNewFiles()
             if (newFiles > 0) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Fetched $newFiles new files", Toast.LENGTH_SHORT).show()
-                }
+                Toast.makeText(context, "Fetched $newFiles new files", Toast.LENGTH_SHORT).show()
             }
         }
 
     }
 
     suspend  fun fetchNewFiles(): Int {
-        return syncNewFilesAndClearGarbage(remoteFileRepository, localFileRepository)
+        return withContext(Dispatchers.IO) {
+            syncNewFilesAndClearGarbage(remoteFileRepository, localFileRepository)
+        }
     }
 
     //TODO: pass file name to downloader - [FileEntity.name]
