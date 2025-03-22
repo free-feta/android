@@ -3,17 +3,20 @@ package et.fira.freefeta.ui.home
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -46,7 +49,9 @@ import et.fira.freefeta.ui.FilePermissionHandler
 import et.fira.freefeta.ui.ad.AdViewModel
 import et.fira.freefeta.ui.navigation.NavigationDestination
 import et.fira.freefeta.ui.search.CategoryHeader
+import et.fira.freefeta.ui.search.DownloadItemData
 import et.fira.freefeta.ui.search.FilterChipsRow
+import et.fira.freefeta.ui.search.SearchUiState
 import et.fira.freefeta.ui.search.SearchViewModel
 import et.fira.freefeta.ui.search.TopBarWithSearch
 import et.fira.freefeta.ui.theme.FreeFetaTheme
@@ -70,7 +75,7 @@ fun HomeScreen(
     restartNetworkStateMonitoring: KFunction0<Unit>,
     searchViewModel: SearchViewModel
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val searchUiState by searchViewModel.uiState.collectAsStateWithLifecycle()
     val showDeleteDialog by viewModel.showDeleteDialog.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
@@ -79,10 +84,9 @@ fun HomeScreen(
     val selectedMediaType by searchViewModel.selectedMediaType.collectAsState()
     val availableFileTypes by searchViewModel.availableFileTypes.collectAsState()
     val availableMediaTypes by searchViewModel.availableMediaTypes.collectAsState()
-    val searchResults by searchViewModel.searchResults.collectAsState()
 
     var isSearchActive by remember { mutableStateOf(false) }
-    var isFilterActive by remember { mutableStateOf(false) }
+    val isFilterActive by searchViewModel.isFilterActive.collectAsState()
 
     Scaffold(
         topBar = {
@@ -92,15 +96,17 @@ fun HomeScreen(
                     searchViewModel.setSearchQuery(query)
                 },
                 isSearchActive = isSearchActive,
-                onSearchActiveChanged = { isSearchActive = it },
+                onSearchActiveChanged = {isSearchActive = it},
                 isFilterActive = isFilterActive,
-                onFilterActiveChanged = {isFilterActive = it},
-                restartNetworkStateMonitoring = restartNetworkStateMonitoring
+                onFilterActiveChanged = searchViewModel::setFilterState,
+                restartNetworkStateMonitoring = restartNetworkStateMonitoring,
+                hasAnyFilterSelected = selectedFileType != null || selectedMediaType != null,
+                searchQuery = searchQuery
             )
         }
     ) { contentPadding ->
         Column(
-            modifier = Modifier.padding(contentPadding)
+            modifier = Modifier.padding(contentPadding).imePadding()
         ) {
             // Show filter chips when filter is active
             AnimatedVisibility(visible = isFilterActive) {
@@ -133,7 +139,9 @@ fun HomeScreen(
                     if (selectedFileType != null || selectedMediaType != null) {
                         TextButton(
                             onClick = { searchViewModel.clearFilters() },
-                            modifier = Modifier.align(Alignment.End).padding(end = 16.dp)
+                            modifier = Modifier
+                                .align(Alignment.End)
+                                .padding(end = 16.dp)
                         ) {
                             Text("Clear Filters")
                         }
@@ -157,76 +165,105 @@ fun HomeScreen(
             NavDrawer(
                 navigateTo = navigateTo,
             ) {
-                if (uiState.downloadItemList.isNotEmpty()) {
-                    HomeBody(
-                        downloadItemList = searchResults.map { DownloadItemData(it, null) }.groupBy {
-                            it.file.mediaType?.name ?: it.file.fileType.name
-                        }.toSortedMap(),
-                        onAction = viewModel::downloadAction,
-                        fetchNewFiles = viewModel::fetchNewFiles,
-                        navigateTo = navigateTo,
-                        triggerAd = adViewModel::triggerAdBeforeAction,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                } else {
-                    val coroutineScope = rememberCoroutineScope()
-                    val isLoading = remember { mutableStateOf(false) }
-
-                    Column(
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        if (isLoading.value) {
-                            CircularProgressIndicator()
-                        } else {
-                            Row(
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp)
-                            ) {
+                when (searchUiState) {
+                    is SearchUiState.Success -> {
+                        if ((searchUiState as SearchUiState.Success).downloadItemDataList.isEmpty()) {
+                            if (searchQuery.text.isNotEmpty() || selectedFileType != null && selectedMediaType != null) {
                                 Text(
-                                    text = "No entries to show! \nInternet connection is needed to get file list once",
-                                    textAlign = TextAlign.Center
+                                    text = if (searchQuery.text.isNotEmpty()) {
+                                        if (selectedFileType != null && selectedMediaType != null) {
+                                            "No results found for \"${searchQuery.text}\" with ${selectedFileType?.name} and ${selectedMediaType?.name} type"
+                                        } else if (selectedFileType != null) {
+                                            "No results found for \"${searchQuery.text}\" with ${selectedFileType?.name} type"
+                                        } else if (selectedMediaType != null) {
+                                            "No results found for \"${searchQuery.text}\" with ${selectedMediaType?.name} type"
+                                        } else {
+                                            "No results found for \"${searchQuery.text}\""
+                                        }
+                                    } else {
+                                        "No results found with ${selectedFileType?.name} and ${selectedMediaType?.name} type"
+                                    },
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                            }
-                            Spacer(Modifier.height(16.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                OutlinedButton(
-                                    onClick = {
-                                        coroutineScope.launch {
-                                            isLoading.value = true
-                                            Toast.makeText(
-                                                context,
-                                                "Getting files, please wait",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            val newFiles = viewModel.fetchNewFiles()
-                                            if (newFiles > 0) {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Fetched $newFiles new files",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            } else {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Getting files failed, please make sure you're connected to internet",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
+                            } else {
+                                val coroutineScope = rememberCoroutineScope()
+                                val isLoading = remember { mutableStateOf(false) }
+
+                                Column(
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    if (isLoading.value) {
+                                        CircularProgressIndicator()
+                                    } else {
+                                        Row(
+                                            horizontalArrangement = Arrangement.Center,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 8.dp)
+                                        ) {
+                                            Text(
+                                                text = "No entries to show! \nInternet connection is needed to get file list once",
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                        Spacer(Modifier.height(16.dp))
+                                        Row(
+                                            horizontalArrangement = Arrangement.Center,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            OutlinedButton(
+                                                onClick = {
+                                                    coroutineScope.launch {
+                                                        isLoading.value = true
+                                                        Toast.makeText(
+                                                            context,
+                                                            "Getting files, please wait",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                        val newFiles = viewModel.fetchNewFiles()
+                                                        if (newFiles > 0) {
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Fetched $newFiles new files",
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                        } else {
+                                                            Toast.makeText(
+                                                                context,
+                                                                "Getting files failed, please make sure you're connected to internet",
+                                                                Toast.LENGTH_SHORT
+                                                            ).show()
+                                                        }
+                                                        isLoading.value = false
+                                                    }
+                                                }
+                                            ) {
+                                                Text("Refresh")
                                             }
-                                            isLoading.value = false
                                         }
                                     }
-                                ) {
-                                    Text("Refresh")
                                 }
                             }
+
+                        } else {
+                            DownloadList(
+                                downloadItemDataList = (searchUiState as SearchUiState.Success).downloadItemDataList,
+                                onAction = viewModel::downloadAction,
+                                fetchNewFiles = viewModel::fetchNewFiles,
+                                navigateTo = navigateTo,
+                                triggerAd = adViewModel::triggerAdBeforeAction,
+                                hasAnyFilterSelected = selectedFileType != null || selectedMediaType != null,
+                                modifier = Modifier.fillMaxSize(),
+                            )
                         }
+                    }
+
+                    is SearchUiState.Loading -> {
+                        CircularProgressIndicator()
                     }
                 }
 
@@ -234,26 +271,6 @@ fun HomeScreen(
         }
     }
 }
-
-@Composable
-fun HomeBody(
-    downloadItemList: Map<String, List<DownloadItemData>>,
-    onAction: (DownloadAction) -> Unit,
-    fetchNewFiles: KSuspendFunction0<Int>,
-    navigateTo: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    triggerAd: KFunction1<() -> Unit, Unit>,
-) {
-    DownloadList(
-        groupedDownloadItemList = downloadItemList,
-        onAction = onAction,
-        fetchNewFiles = fetchNewFiles,
-        navigateTo = navigateTo,
-        triggerAd = triggerAd,
-        modifier = modifier.fillMaxSize()
-    )
-}
-
 
 @Composable
 fun NavDrawer(
@@ -285,7 +302,12 @@ fun NavDrawer(
         },
         layoutType = customNavSuiteType
     ) {
-        content()
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            content()
+        }
     }
 }
 
