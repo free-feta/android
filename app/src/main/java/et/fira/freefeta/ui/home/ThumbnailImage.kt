@@ -34,7 +34,7 @@ fun ThumbnailImage(
     modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .size(64.dp)
             .clickable(
                 onClick = onClick
