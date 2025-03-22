@@ -29,10 +29,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -41,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -57,14 +55,15 @@ import kotlin.reflect.KFunction0
 fun TopBarWithSearch(
     networkState: NetworkState,
     modifier: Modifier = Modifier,
-    onSearchQueryChanged: (String) -> Unit = {},
+    searchQuery: TextFieldValue,
+    onSearchQueryChanged: (TextFieldValue) -> Unit = {},
     isSearchActive: Boolean,
     onSearchActiveChanged: (Boolean) -> Unit,
     isFilterActive: Boolean,
     onFilterActiveChanged: (Boolean) -> Unit,
-    restartNetworkStateMonitoring: KFunction0<Unit>
+    restartNetworkStateMonitoring: KFunction0<Unit>,
+    hasAnyFilterSelected: Boolean
 ) {
-    var searchText by remember { mutableStateOf(TextFieldValue("")) }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     val uriHandler = LocalUriHandler.current
@@ -101,10 +100,9 @@ fun TopBarWithSearch(
                                 Spacer(modifier = Modifier.width(8.dp))
 
                                 TextField(
-                                    value = searchText,
+                                    value = searchQuery,
                                     onValueChange = {
-                                        searchText = it
-                                        onSearchQueryChanged(it.text)
+                                        onSearchQueryChanged(it.copy(selection = TextRange(it.text.length)))
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -131,9 +129,8 @@ fun TopBarWithSearch(
                             }
 
                             IconButton(onClick = {
-                                searchText = TextFieldValue("")
                                 onSearchActiveChanged(false)
-                                onSearchQueryChanged("")
+                                onSearchQueryChanged(TextFieldValue(""))
                             }) {
                                 Icon(Icons.Default.Close, contentDescription = "Close search")
                             }
@@ -149,7 +146,8 @@ fun TopBarWithSearch(
                         Icon(painterResource(
                             R.drawable.filter_list_icon),
                             "Filter",
-                            tint = if(isFilterActive) MaterialTheme.colorScheme.primary else
+                            tint = if(isFilterActive || hasAnyFilterSelected)
+                                MaterialTheme.colorScheme.primary else
                                 MaterialTheme.colorScheme.onSurface )
                     }
                     if (isSearchActive) Spacer(Modifier.width(16.dp))
@@ -169,7 +167,7 @@ fun CategoryHeader(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleSmall,
-        modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp)
+        modifier = Modifier.padding(start = 16.dp, top = 4.dp, bottom = 2.dp)
     )
 }
 
@@ -183,7 +181,7 @@ fun FilterChipsRow(
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
@@ -262,9 +260,11 @@ private fun TopBarPreview() {
             NetworkState.NoInternet,
             isSearchActive = false,
             onSearchActiveChanged = { },
+            searchQuery = TextFieldValue(""),
             isFilterActive = false,
             onFilterActiveChanged = {},
-            restartNetworkStateMonitoring = {} as KFunction0
+            restartNetworkStateMonitoring = {} as KFunction0,
+            hasAnyFilterSelected = false,
         )
     }
 }
