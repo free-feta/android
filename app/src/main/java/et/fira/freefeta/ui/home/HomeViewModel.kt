@@ -59,10 +59,6 @@ class HomeViewModel(
     private val remoteFileRepository: RemoteFileRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
 ): ViewModel() {
-    private val filesFlow: Flow<List<FileEntity>> = localFileRepository.getAllFilesStream()
-    private val downloadModelsFlow: Flow<List<DownloadModel>> = fileDownloaderRepository.observeDownloads()
-
-
     private val showDeleteDialogPreferenceState: MutableState<Boolean> = mutableStateOf(false)
 
     private val _showDeleteDialog = MutableStateFlow(false)
