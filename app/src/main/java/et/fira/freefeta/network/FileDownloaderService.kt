@@ -15,11 +15,17 @@ class TeleFileDownloaderService(
         path: String,
         fileName: String? = null,
         tag: String = "",
-        headers: HashMap<String, String> = hashMapOf()
+        headers: HashMap<String, String> = hashMapOf(),
+        sendId: String? = null
     ): Int {
         val uri = Uri.parse(url)
         val finalHeaders = if (uri.host == "telebirrchat.ethiomobilemoney.et" && headers.isEmpty()) {
-            AppConstants.Network.HEADER_FOR_ZERO_RATING_URL
+            val zeroRatingHeaders = HashMap(AppConstants.Network.HEADER_FOR_ZERO_RATING_URL
+                .toMutableMap())
+            if (sendId != null) {
+                zeroRatingHeaders["sendid"] = sendId
+            }
+            zeroRatingHeaders
         } else {
             headers
         }

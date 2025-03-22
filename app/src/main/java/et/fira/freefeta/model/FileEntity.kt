@@ -36,6 +36,8 @@ data class FileEntity(
     @ColumnInfo(name = "download_url")
     val downloadUrl: String,
 
+    val sendid: String? = null,
+
     @SerializedName(value = "thumbnail_url")
     @ColumnInfo(name = "thumbnail_url")
     val thumbnailUlr: String? = null,

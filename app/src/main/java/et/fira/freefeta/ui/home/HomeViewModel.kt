@@ -126,7 +126,7 @@ class HomeViewModel(
     private fun downloadFile(context: Context, file: FileEntity) {
         if (context.hasFilePermission()) {
             if (context.createAndCheckFolder()) {
-                val downloadId = fileDownloaderRepository.download(file.downloadUrl)
+                val downloadId = fileDownloaderRepository.download(file.downloadUrl, file.sendid)
                 viewModelScope.launch {
                     localFileRepository.updateFileDownloadId(file.id, downloadId)
                 }
