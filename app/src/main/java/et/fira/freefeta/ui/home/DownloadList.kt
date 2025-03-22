@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import et.fira.freefeta.ui.search.DownloadItemData
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.reflect.KFunction1
@@ -30,12 +31,13 @@ import kotlin.reflect.KSuspendFunction0
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun DownloadList(
-    groupedDownloadItemList: Map<String, List<DownloadItemData>>,
+    downloadItemDataList: List<DownloadItemData>,
     onAction: (DownloadAction) -> Unit,
     fetchNewFiles: KSuspendFunction0<Int>,
     navigateTo: (String) -> Unit,
-    modifier: Modifier = Modifier,
     triggerAd: KFunction1<() -> Unit, Unit>,
+    hasAnyFilterSelected: Boolean,
+    modifier: Modifier = Modifier,
 ) {
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
@@ -50,7 +52,8 @@ fun DownloadList(
                 delay(500)
                 val newFiles = fetchNewFiles()
                 if (newFiles > 0) {
-                    Toast.makeText(context, "Fetched $newFiles new files", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Fetched $newFiles new files", Toast.LENGTH_SHORT)
+                        .show()
                 } else {
                     Toast.makeText(context, "No new files released", Toast.LENGTH_SHORT).show()
                 }
@@ -65,66 +68,71 @@ fun DownloadList(
                 .fillMaxSize()
                 .padding(horizontal = 8.dp),
         ) {
-            groupedDownloadItemList.forEach { (type, itemList) ->
-                stickyHeader(
-                    key = type
-                ) {
-                    Text(
-                        text = type,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(horizontal = 16.dp)
-                    )
+            downloadItemDataList
+                .groupBy {
+                    it.file.mediaType?.name ?: it.file.fileType.name
+                }.toSortedMap()
+                .forEach { (type, itemList) ->
+                    if (!hasAnyFilterSelected) {
+                        stickyHeader(
+                            key = type
+                        ) {
+                            Text(
+                                text = type,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.surface)
+                                    .padding(horizontal = 16.dp)
+                            )
 
+                        }
+                    }
+
+                    val itemsWithFolder = itemList.filter {
+                        it.file.folderName != null
+                    }.groupBy { itemData -> itemData.file.folderName }
+
+                    items(
+                        items = itemsWithFolder.entries.toList(),
+                        key = { item -> item.key!! }
+                    ) {
+                        FolderDownloadView(
+                            folderName = it.key!!,
+                            folderItems = it.value.reversed(),
+                            onAction = onAction,
+                            navigateTo = navigateTo,
+                            triggerAd = triggerAd,
+                            expandedFolder = expandedFolderName,
+                            onChangeExpand = {
+                                expandedFolderName = if (expandedFolderName == it.key!!) {
+                                    ""
+                                } else {
+                                    it.key!!
+                                }
+                            }
+                        )
+                    }
+
+                    val filesWithoutFolder = itemList.filter {
+                        it.file.folderName == null
+                    }
+
+                    items(
+                        items = filesWithoutFolder,
+                        key = { item -> item.file.id }
+                    ) {
+                        DownloadItem(
+                            downloadItemData = it,
+                            onAction = onAction,
+                            navigateTo = navigateTo,
+                            triggerAd = triggerAd,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .animateItem()
+                        )
+                    }
                 }
-
-                val itemsWithFolder = itemList.filter {
-                    it.file.folderName != null
-                }.groupBy { itemData -> itemData.file.folderName }
-
-                items(
-                    items = itemsWithFolder.entries.toList(),
-                    key = {item -> item.key!!}
-                ) {
-                   FolderDownloadView(
-                       folderName = it.key!!,
-                       folderItems = it.value.reversed(),
-                       onAction = onAction,
-                       navigateTo = navigateTo,
-                       triggerAd = triggerAd,
-                       expandedFolder = expandedFolderName,
-                       onChangeExpand = {
-                           expandedFolderName = if (expandedFolderName == it.key!!) {
-                               ""
-                           } else {
-                               it.key!!
-                           }
-                       }
-                   )
-                }
-
-                val filesWithoutFolder = itemList.filter {
-                    it.file.folderName == null
-                }
-
-                items(
-                    items = filesWithoutFolder,
-                    key = {item -> item.file.id}
-                ) {
-                    DownloadItem(
-                        downloadItemData = it,
-                        onAction = onAction,
-                        navigateTo = navigateTo,
-                        triggerAd = triggerAd,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .animateItem()
-                    )
-                }
-            }
-
         }
     }
 
