@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -19,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -88,26 +90,39 @@ fun HomeScreen(
     var isSearchActive by remember { mutableStateOf(false) }
     val isFilterActive by searchViewModel.isFilterActive.collectAsState()
 
-    Scaffold(
-        topBar = {
+    Surface(
+//        topBar = {
+//            TopBarWithSearch(
+//                networkState = networkState,
+//                onSearchQueryChanged = { query ->
+//                    searchViewModel.setSearchQuery(query)
+//                },
+//                isSearchActive = isSearchActive,
+//                onSearchActiveChanged = {isSearchActive = it},
+//                isFilterActive = isFilterActive,
+//                onFilterActiveChanged = searchViewModel::setFilterState,
+//                restartNetworkStateMonitoring = restartNetworkStateMonitoring,
+//                hasAnyFilterSelected = selectedFileType != null || selectedMediaType != null,
+//                searchQuery = searchQuery
+//            )
+//        }
+    ) {
+        Column(
+            modifier = Modifier.statusBarsPadding()
+        ) {
             TopBarWithSearch(
                 networkState = networkState,
                 onSearchQueryChanged = { query ->
                     searchViewModel.setSearchQuery(query)
                 },
                 isSearchActive = isSearchActive,
-                onSearchActiveChanged = {isSearchActive = it},
+                onSearchActiveChanged = { isSearchActive = it },
                 isFilterActive = isFilterActive,
                 onFilterActiveChanged = searchViewModel::setFilterState,
                 restartNetworkStateMonitoring = restartNetworkStateMonitoring,
                 hasAnyFilterSelected = selectedFileType != null || selectedMediaType != null,
                 searchQuery = searchQuery
             )
-        }
-    ) { contentPadding ->
-        Column(
-            modifier = Modifier.padding(contentPadding).imePadding()
-        ) {
             // Show filter chips when filter is active
             AnimatedVisibility(visible = isFilterActive) {
                 Column {

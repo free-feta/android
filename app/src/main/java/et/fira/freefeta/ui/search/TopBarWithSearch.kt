@@ -68,96 +68,94 @@ fun TopBarWithSearch(
     val keyboardController = LocalSoftwareKeyboardController.current
     val uriHandler = LocalUriHandler.current
 
-    Column {
-        TopAppBar(
-            title = {},
-            actions = {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = modifier
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp)
+    ) {
+        IconButton(
+            onClick = {
+                uriHandler.openUri(AppConstants.About.APP_TG_CHANNEL)
+            },
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.telegram_icon),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+        if (isSearchActive) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
+            ) {
+                Spacer(modifier = Modifier.width(8.dp))
+
+                TextField(
+                    value = searchQuery,
+                    onValueChange = {
+                        onSearchQueryChanged(it.copy(selection = TextRange(it.text.length)))
+                    },
+                    modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
-                ) {
-                    IconButton(
-                        onClick = {
-                            uriHandler.openUri(AppConstants.About.APP_TG_CHANNEL)
-                        },
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.telegram_icon),
-                            contentDescription = null,
-                            tint = Color.Unspecified,
-                            modifier = Modifier.fillMaxSize()
-                        )
+                        .focusRequester(focusRequester),
+                    placeholder = { Text("Search...") },
+                    singleLine = true,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(
+                        onSearch = { keyboardController?.hide() }
+                    )
+                )
+
+                LaunchedEffect(isSearchActive) {
+                    if (isSearchActive) {
+                        focusRequester.requestFocus()
                     }
-                        if (isSearchActive) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                TextField(
-                                    value = searchQuery,
-                                    onValueChange = {
-                                        onSearchQueryChanged(it.copy(selection = TextRange(it.text.length)))
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .focusRequester(focusRequester),
-                                    placeholder = { Text("Search...") },
-                                    singleLine = true,
-                                    colors = TextFieldDefaults.colors(
-                                        focusedContainerColor = Color.Transparent,
-                                        unfocusedContainerColor = Color.Transparent,
-                                        focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent
-                                    ),
-                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                                    keyboardActions = KeyboardActions(
-                                        onSearch = {keyboardController?.hide()}
-                                    )
-                                )
-
-                                LaunchedEffect(isSearchActive) {
-                                    if (isSearchActive) {
-                                        focusRequester.requestFocus()
-                                    }
-                                }
-                            }
-
-                            IconButton(onClick = {
-                                onSearchActiveChanged(false)
-                                onSearchQueryChanged(TextFieldValue(""))
-                            }) {
-                                Icon(Icons.Default.Close, contentDescription = "Close search")
-                            }
-                        } else {
-                            IconButton(onClick = { onSearchActiveChanged(true)}) {
-                                Icon(Icons.Default.Search, contentDescription = "Search")
-                            }
-                        }
-
-                    IconButton(
-                        onClick = {onFilterActiveChanged(!isFilterActive)},
-                    ) {
-                        Icon(painterResource(
-                            R.drawable.filter_list_icon),
-                            "Filter",
-                            tint = if(isFilterActive || hasAnyFilterSelected)
-                                MaterialTheme.colorScheme.primary else
-                                MaterialTheme.colorScheme.onSurface )
-                    }
-                    if (isSearchActive) Spacer(Modifier.width(16.dp))
-
-                    NetworkStatusView(state = networkState,
-                        restartNetworkStateMonitoring = restartNetworkStateMonitoring)
                 }
             }
-        )
 
+            IconButton(onClick = {
+                onSearchActiveChanged(false)
+                onSearchQueryChanged(TextFieldValue(""))
+            }) {
+                Icon(Icons.Default.Close, contentDescription = "Close search")
+            }
+        } else {
+            IconButton(onClick = { onSearchActiveChanged(true) }) {
+                Icon(Icons.Default.Search, contentDescription = "Search")
+            }
+        }
+
+        IconButton(
+            onClick = { onFilterActiveChanged(!isFilterActive) },
+        ) {
+            Icon(
+                painterResource(
+                    R.drawable.filter_list_icon
+                ),
+                "Filter",
+                tint = if (isFilterActive || hasAnyFilterSelected)
+                    MaterialTheme.colorScheme.primary else
+                    MaterialTheme.colorScheme.onSurface
+            )
+        }
+        if (isSearchActive) Spacer(Modifier.width(16.dp))
+
+        NetworkStatusView(
+            state = networkState,
+            restartNetworkStateMonitoring = restartNetworkStateMonitoring
+        )
     }
 
 }
