@@ -110,6 +110,8 @@ fun HomeScreen(
         Column(
             modifier = Modifier.statusBarsPadding()
         ) {
+            FilePermissionHandler()
+
             TopBarWithSearch(
                 networkState = networkState,
                 onSearchQueryChanged = { query ->
@@ -165,7 +167,6 @@ fun HomeScreen(
                     HorizontalDivider()
                 }
             }
-            FilePermissionHandler()
             if (showDeleteDialog) {
                 DeleteConfirmationDialog(
                     onConfirm = { neverShow ->
