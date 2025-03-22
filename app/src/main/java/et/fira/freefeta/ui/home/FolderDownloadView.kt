@@ -40,6 +40,7 @@ import et.fira.freefeta.model.FileEntity
 import et.fira.freefeta.model.FileType
 import et.fira.freefeta.model.icon
 import et.fira.freefeta.ui.ad.AdViewModel
+import et.fira.freefeta.ui.search.DownloadItemData
 import et.fira.freefeta.ui.theme.FreeFetaTheme
 import kotlin.reflect.KFunction1
 
