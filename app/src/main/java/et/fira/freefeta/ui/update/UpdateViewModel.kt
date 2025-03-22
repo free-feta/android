@@ -13,6 +13,7 @@ import com.ketch.DownloadModel
 import et.fira.freefeta.data.config.AppConfigRepository
 import et.fira.freefeta.data.file.FileDownloaderRepository
 import et.fira.freefeta.model.AppConfig
+import et.fira.freefeta.util.AppConstants
 import et.fira.freefeta.util.Util.isVersionOlder
 import et.fira.freefeta.util.createAndCheckFolder
 import et.fira.freefeta.util.hasFilePermission
@@ -73,9 +74,11 @@ class UpdateViewModel(
     }
 
     fun downloadUpdate(context: Context, url: String) {
+        val updateFolder = "App-Update"
         if (context.hasFilePermission()) {
-            if (context.createAndCheckFolder()) {
-                val downloadId = fileDownloaderRepository.download(url, folderName = "App-Update")
+            if (context.createAndCheckFolder() && context.createAndCheckFolder(
+                    AppConstants.File.DOWNLOAD_FOLDER_NAME + File.separator + updateFolder)) {
+                val downloadId = fileDownloaderRepository.download(url, folderName = updateFolder)
                 updateDownloaderJob?.cancel()
                 updateDownloaderJob = viewModelScope.launch {
                     fileDownloaderRepository.observeDownload(downloadId).collect { downloadModel ->
