@@ -10,12 +10,15 @@ import java.io.File
 class FileDownloaderRepository(
     private val teleFileDownloaderService: TeleFileDownloaderService
 ) {
-    fun download(url: String, sendId: String? = null): Int {
+    fun download(url: String, sendId: String? = null, folderName: String? = null): Int {
+        val path = Environment.getExternalStoragePublicDirectory(
+            Environment.DIRECTORY_DOWNLOADS
+        ).path + File.separator + AppConstants.File.DOWNLOAD_FOLDER_NAME +
+                if (folderName != null) {File.separator + folderName} else ""
+
         return teleFileDownloaderService.download(
             url = url,
-            path = Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_DOWNLOADS
-            ).path + File.separator + AppConstants.File.DOWNLOAD_FOLDER_NAME,
+            path = path,
             sendId = sendId
         )
     }

@@ -100,7 +100,6 @@ class HomeViewModel(
         }
     }
 
-
     private fun dismissDialog() {
         _showDeleteDialog.value = false
         currentDeleteFileInfo = null // Clear on dismiss
@@ -125,8 +124,10 @@ class HomeViewModel(
     //TODO: pass file name to downloader - [FileEntity.name]
     private fun downloadFile(context: Context, file: FileEntity) {
         if (context.hasFilePermission()) {
-            if (context.createAndCheckFolder()) {
-                val downloadId = fileDownloaderRepository.download(file.downloadUrl, file.sendid)
+            if (context.createAndCheckFolder() &&
+                (file.folderName == null || context.createAndCheckFolder(
+                    AppConstants.File.DOWNLOAD_FOLDER_NAME + File.separator + file.folderName))) {
+                val downloadId = fileDownloaderRepository.download(file.downloadUrl, file.sendid, file.folderName)
                 viewModelScope.launch {
                     localFileRepository.updateFileDownloadId(file.id, downloadId)
                 }
@@ -141,8 +142,6 @@ class HomeViewModel(
             }
             context.startActivity(intent)
         }
-
-
     }
 
     private fun deleteFileDownload(fileId: Int, downloadId: Int) {
