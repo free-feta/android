@@ -75,7 +75,7 @@ class UpdateViewModel(
     fun downloadUpdate(context: Context, url: String) {
         if (context.hasFilePermission()) {
             if (context.createAndCheckFolder()) {
-                val downloadId = fileDownloaderRepository.download(url)
+                val downloadId = fileDownloaderRepository.download(url, folderName = "App-Update")
                 updateDownloaderJob?.cancel()
                 updateDownloaderJob = viewModelScope.launch {
                     fileDownloaderRepository.observeDownload(downloadId).collect { downloadModel ->
