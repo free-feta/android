@@ -134,7 +134,9 @@ fun FileDetailWithAction(
                                 )
                                 Text(
                                     text = file.runtime,
-                                    fontSize = 12.sp
+                                    fontSize = 12.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                             Spacer(Modifier.width(8.dp))
@@ -144,7 +146,9 @@ fun FileDetailWithAction(
                             text = file.size?.uppercase() ?: "",
                             style = MaterialTheme.typography.labelLarge,
                             fontStyle = FontStyle.Italic,
-                            fontSize = 12.sp
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                     if (downloadModel != null &&
@@ -215,8 +219,9 @@ private fun FileInfoPreview() {
                 fileType = FileType.VIDEO,
                 name = "Top Gun: Mavrick smth",
                 downloadUrl = "",
-                size = "1MB",
-                runtime = "1h 34min",
+                size = "999.8MB",
+                runtime = "01:23:45",
+                isPlayable = true
             ),
             downloadModel = if (true) DownloadModel(
                 url = "",
@@ -226,7 +231,7 @@ private fun FileInfoPreview() {
                 id = 1,
                 headers = hashMapOf(),
                 timeQueued = 1,
-                status = Status.PROGRESS,
+                status = Status.SUCCESS,
                 total = 1024 * 1024,
                 progress = 50,
                 speedInBytePerMs = 1024 * 1024 / 1000f,
