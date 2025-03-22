@@ -2,11 +2,20 @@ package et.fira.freefeta.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import et.fira.freefeta.R
 
-@Entity(tableName = "files")
+@Entity(
+    tableName = "files",
+    indices = [
+        Index("name"),
+        Index("folder_name"),
+        Index("file_type"),
+        Index("media_type")
+    ]
+)
 data class FileEntity(
     @PrimaryKey
     val id: Int,
