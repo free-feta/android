@@ -22,6 +22,7 @@ import et.fira.freefeta.data.file.FileDownloaderRepository
 import et.fira.freefeta.data.file.LocalFileRepository
 import et.fira.freefeta.data.file.RemoteFileRepository
 import et.fira.freefeta.model.FileEntity
+import et.fira.freefeta.ui.search.DownloadItemData
 import et.fira.freefeta.util.AppConstants
 import et.fira.freefeta.util.Util.syncNewFilesAndClearGarbage
 import et.fira.freefeta.util.createAndCheckFolder
@@ -61,17 +62,6 @@ class HomeViewModel(
     private val filesFlow: Flow<List<FileEntity>> = localFileRepository.getAllFilesStream()
     private val downloadModelsFlow: Flow<List<DownloadModel>> = fileDownloaderRepository.observeDownloads()
 
-    val uiState: StateFlow<HomeUiState> = combine(filesFlow, downloadModelsFlow) { files, downloads ->
-        val itemList: List<DownloadItemData> = files.map { file ->
-            val download = downloads.find { it.id == file.downloadId }
-            DownloadItemData(file, download)
-        }
-        HomeUiState(itemList)
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.Lazily,
-        HomeUiState()
-    )
 
     private val showDeleteDialogPreferenceState: MutableState<Boolean> = mutableStateOf(false)
 
@@ -284,15 +274,6 @@ class HomeViewModel(
 
 
 }
-
-data class HomeUiState(
-    val downloadItemList: List<DownloadItemData> = listOf()
-)
-
-data class DownloadItemData(
-    val file: FileEntity,
-    val downloadModel: DownloadModel?,
-)
 
 data class DeleteFileInfo(
     val fileId: Int,

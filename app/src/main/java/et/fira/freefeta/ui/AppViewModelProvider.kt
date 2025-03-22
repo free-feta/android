@@ -18,7 +18,8 @@ object AppViewModelProvider {
     val Factory = viewModelFactory {
         initializer {
             SearchViewModel(
-                repository = freeFetaApplication().container.localFileRepository
+                repository = freeFetaApplication().container.localFileRepository,
+                fileDownloaderRepository = freeFetaApplication().container.fileDownloaderRepository
             )
         }
 
