@@ -6,7 +6,7 @@ object AppConstants {
     }
 
     object Network {
-        const val ZERO_RATING_URL = " https://supperapp-chat-prod.obsv3.et-global-1.ethiotelecom.et"
+        const val ZERO_RATING_URL = "https://telebirrchat.ethiomobilemoney.et:21006/sfs/ufile?digest=fidcc11a5c7e6853e2212f6656a831039ec&filename=adventures-of-sherlock-holmes.epub"
         val HEADER_FOR_ZERO_RATING_URL = hashMapOf(
             "appid" to "1012673623603201",
             "access-token" to "34A1367993D9409639D081B3A91159D37FD5DF999E2B97C8C822F92E44DE6A65",
