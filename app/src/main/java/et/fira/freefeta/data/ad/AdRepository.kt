@@ -84,7 +84,7 @@ class AdRepositoryImpl(
     override suspend fun getOnDemandAd(): Advertisement? {
         try {
             val ads = adDao.getAllAds()
-            Log.d("AdRepositoryImpl", "Ads 4 on demand: $ads")
+//            Log.d("AdRepositoryImpl", "Ads 4 on demand: $ads")
             val onDemandAd = ads.filter { !it.expired && !it.showOnStartup }.random()
             if (onDemandAd.isOneTime) {
                 adDao.setExpired(onDemandAd.id, true)
