@@ -1,12 +1,20 @@
 package et.fira.freefeta.ui.search
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -75,6 +83,7 @@ fun TopBarWithSearch(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp)
+            .height(56.dp)
     ) {
         IconButton(
             onClick = {
@@ -89,7 +98,13 @@ fun TopBarWithSearch(
                 modifier = Modifier.fillMaxSize()
             )
         }
-        if (isSearchActive) {
+
+        AnimatedVisibility(
+            visible = isSearchActive,
+            enter = fadeIn() + slideInHorizontally(),
+            exit = fadeOut() + slideOutHorizontally(),
+            modifier = Modifier.weight(1f)
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.weight(1f)
@@ -124,18 +139,24 @@ fun TopBarWithSearch(
                     }
                 }
             }
+        }
 
-            IconButton(onClick = {
-                onSearchActiveChanged(false)
-                onSearchQueryChanged(TextFieldValue(""))
-            }) {
-                Icon(Icons.Default.Close, contentDescription = "Close search")
-            }
-        } else {
-            IconButton(onClick = { onSearchActiveChanged(true) }) {
-                Icon(Icons.Default.Search, contentDescription = "Search")
+// Animate between Search and Close icons
+        Crossfade(targetState = isSearchActive) { active ->
+            if (active) {
+                IconButton(onClick = {
+                    onSearchActiveChanged(false)
+                    onSearchQueryChanged(TextFieldValue(""))
+                }) {
+                    Icon(Icons.Default.Close, contentDescription = "Close search")
+                }
+            } else {
+                IconButton(onClick = { onSearchActiveChanged(true) }) {
+                    Icon(Icons.Default.Search, contentDescription = "Search")
+                }
             }
         }
+
 
         IconButton(
             onClick = { onFilterActiveChanged(!isFilterActive) },
@@ -165,7 +186,7 @@ fun CategoryHeader(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.titleSmall,
-        modifier = Modifier.padding(start = 16.dp, top = 4.dp, bottom = 2.dp)
+        modifier = Modifier.padding(start = 16.dp)
     )
 }
 
