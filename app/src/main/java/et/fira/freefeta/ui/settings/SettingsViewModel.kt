@@ -21,7 +21,7 @@ import kotlinx.coroutines.withContext
 class SettingsViewModel(
     private val userPreferencesRepository: UserPreferencesRepository,
     private val configRepository: AppConfigRepository
-): ViewModel() {
+) : ViewModel() {
     val settingsUiState: StateFlow<SettingsUiState> = userPreferencesRepository.userPreferences
         .map { prefs ->
             SettingsUiState(
@@ -63,23 +63,26 @@ class SettingsViewModel(
 
     fun checkForUpdate(context: Context) {
         viewModelScope.launch {
+            Toast.makeText(context, "Checking for updates", Toast.LENGTH_SHORT).show()
             withContext(Dispatchers.IO) {
-                Toast.makeText(context, "Checking for updates", Toast.LENGTH_SHORT).show()
-                configRepository.getConfig().let { config ->
-                    val installedVersion = context.getInstalledVersion()
-                    if (config != null) {
-                        when {
-                            isVersionOlder(installedVersion, config.minimumVersion) ||
-                                    isVersionOlder(installedVersion, config.latestVersion) -> {
-                                Toast.makeText(context, "Update available", Toast.LENGTH_SHORT).show()
-                            }
-                            else -> Toast.makeText(context, "No update available", Toast.LENGTH_SHORT).show()
+                configRepository.getConfig()
+            }.let { config ->
+                val installedVersion = context.getInstalledVersion()
+                if (config != null) {
+                    when {
+                        isVersionOlder(installedVersion, config.minimumVersion) ||
+                                isVersionOlder(installedVersion, config.latestVersion) -> {
+                            Toast.makeText(context, "Update available", Toast.LENGTH_SHORT).show()
                         }
-                    } else {
-                        Toast.makeText(context, "Failed to fetch update", Toast.LENGTH_SHORT).show()
+
+                        else -> Toast.makeText(context, "No update available", Toast.LENGTH_SHORT)
+                            .show()
                     }
+                } else {
+                    Toast.makeText(context, "Failed to fetch update", Toast.LENGTH_SHORT).show()
                 }
             }
+
 
         }
     }
