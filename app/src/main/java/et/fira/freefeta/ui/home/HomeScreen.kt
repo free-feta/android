@@ -201,7 +201,8 @@ fun HomeScreen(
                                     },
                                     style = MaterialTheme.typography.bodyLarge,
                                     textAlign = TextAlign.Center,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(16.dp)
                                 )
                             } else {
                                 val coroutineScope = rememberCoroutineScope()
@@ -279,7 +280,12 @@ fun HomeScreen(
                     }
 
                     is SearchUiState.Loading -> {
-                        CircularProgressIndicator()
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
                 }
 
@@ -319,7 +325,7 @@ fun NavDrawer(
         layoutType = customNavSuiteType
     ) {
         Box(
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.TopCenter,
             modifier = Modifier.fillMaxSize()
         ) {
             content()
