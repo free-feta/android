@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,7 +43,8 @@ fun DownloadList(
     var isRefreshing by rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
-    var expandedFolderName by remember { mutableStateOf("") }
+    var expandedFolderName by rememberSaveable { mutableStateOf("") }
+    val listState = rememberLazyListState()
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -67,6 +69,7 @@ fun DownloadList(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 8.dp),
+            state = listState
         ) {
             downloadItemDataList
                 .groupBy {
@@ -99,7 +102,7 @@ fun DownloadList(
                     ) {
                         FolderDownloadView(
                             folderName = it.key!!,
-                            folderItems = it.value.reversed(),
+                            folderItems = it.value,
                             onAction = onAction,
                             navigateTo = navigateTo,
                             triggerAd = triggerAd,
