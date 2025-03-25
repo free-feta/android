@@ -62,7 +62,7 @@ fun HeartbeatIconWithTooltip(
     modifier: Modifier = Modifier,
     restartNetworkStateMonitoring: KFunction0<Unit>
 ) {
-    var isAnimationActive by remember { mutableStateOf(true) }
+    var isAnimationActive by remember { mutableStateOf(false) }
 
     val transition = rememberInfiniteTransition()
     val tooltipState = rememberTooltipState(isPersistent = true)
@@ -93,9 +93,9 @@ fun HeartbeatIconWithTooltip(
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .clickable {
-                isAnimationActive = true
-            }
+//            .clickable {
+//                isAnimationActive = true
+//            }
     ) {
         TooltipBox(
             positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
@@ -133,7 +133,7 @@ fun HeartbeatIconWithTooltip(
                             isAnimationActive = true
                             scope.launch {
                                 tooltipState.show()
-                                restartNetworkStateMonitoring()
+//                                restartNetworkStateMonitoring()
                             }
                         },
                     tint = state.getStatusData().color
@@ -235,11 +235,11 @@ fun RippleDotWithTooltip(
                     modifier = Modifier
                         .size(32.dp)
                         .clickable {
-                        isRippleActive = true
-                        scope.launch {
-                        tooltipState.show()
-                        }
-                    },
+                            isRippleActive = true
+                            scope.launch {
+                                tooltipState.show()
+                            }
+                        },
                     tint = state.getStatusData().color
                 )
             }
