@@ -91,7 +91,7 @@ fun FileActionView(
                     iconRes = R.drawable.folder_icon,
                     contentDescription = stringResource(R.string.open_in_folder),
                     tint = MaterialTheme.colorScheme.primary,
-                    onClick = {onAction(DownloadAction.OpenFolder(context))}
+                    onClick = {onAction(DownloadAction.OpenFolder(context, file.folderName))}
                 )
 
                 ActionIcon(

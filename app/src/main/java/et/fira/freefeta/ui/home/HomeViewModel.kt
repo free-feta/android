@@ -41,7 +41,7 @@ sealed interface DownloadAction {
     data class Resume(var downloadModel: DownloadModel): DownloadAction
     data class Download(var context: Context, var file: FileEntity): DownloadAction
     data class Open(var context: Context, var downloadModel: DownloadModel): DownloadAction
-    data class OpenFolder(var context: Context): DownloadAction
+    data class OpenFolder(var context: Context, var folderName: String?): DownloadAction
     data class DeleteRequest(var downloadModel: DownloadModel, var file: FileEntity): DownloadAction
     data class ConfirmDelete(var neverShowAgain: Boolean): DownloadAction
     data object DismissDelete: DownloadAction
@@ -152,7 +152,7 @@ class HomeViewModel(
             is DownloadAction.Resume -> fileDownloaderRepository.resumeDownload(downloadAction.downloadModel.id)
             is DownloadAction.Download -> downloadFile(downloadAction.context, downloadAction.file)
             is DownloadAction.Open -> openFile(downloadAction.context, downloadAction.downloadModel)
-            is DownloadAction.OpenFolder -> openFolder(downloadAction.context)
+            is DownloadAction.OpenFolder -> openFolder(downloadAction.context, downloadAction.folderName)
             is DownloadAction.DeleteRequest -> onDeleteRequest(downloadAction.file.id, downloadAction.downloadModel.id)
             is DownloadAction.ConfirmDelete -> confirmDelete(downloadAction.neverShowAgain)
             is DownloadAction.DismissDelete -> dismissDialog()
@@ -174,7 +174,7 @@ class HomeViewModel(
             Toast.makeText(context, "Downloads directory not accessible", Toast.LENGTH_SHORT).show()
             return
         }
-        val file = File(downloadsDir, "${AppConstants.File.DOWNLOAD_FOLDER_NAME}/${downloadModel.fileName}")
+        val file = File("${downloadModel.path}/${downloadModel.fileName}")
 
         // 3. Check File Existence: Early Exit
         if (!file.exists()) {
@@ -222,8 +222,16 @@ class HomeViewModel(
         }
     }
 
-    private fun openFolder(context: Context) {
-        val folderPath = "${Environment.DIRECTORY_DOWNLOADS}/${AppConstants.File.DOWNLOAD_FOLDER_NAME}"
+    private fun openFolder(context: Context, folderName: String? = null) {
+        val folderPath = "${Environment.DIRECTORY_DOWNLOADS}/${AppConstants.File.DOWNLOAD_FOLDER_NAME}" +
+                if (folderName != null) "/$folderName" else ""
+
+        val file = File(Environment.getExternalStorageDirectory(), folderPath)
+        // 3. Check Folder Existence: Early Exit
+        if (!file.exists()) {
+            Toast.makeText(context, "Folder not found", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         val intent = Intent(Intent.ACTION_VIEW).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -237,7 +245,6 @@ class HomeViewModel(
                 setDataAndType(uri, DocumentsContract.Document.MIME_TYPE_DIR)
             } else {
                 // Legacy FileProvider for Android 5-6
-                val file = File(Environment.getExternalStorageDirectory(), folderPath)
                 val uri = FileProvider.getUriForFile(
                     context,
                     "${context.packageName}.provider",
