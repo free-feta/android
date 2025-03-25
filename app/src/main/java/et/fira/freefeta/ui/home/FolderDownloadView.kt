@@ -22,6 +22,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -64,6 +65,10 @@ fun FolderDownloadView(
         downloadItemData.file.isNew
     }
 
+    val anyDownloading = folderItems.filter {
+        (it.downloadModel?.status ?: Status.DEFAULT) == Status.PROGRESS
+    }
+
     val isFolderExpanded = expandedFolder == folderName
     val rotationState by animateFloatAsState(
         targetValue = if (isFolderExpanded) 180f else 0f
@@ -76,7 +81,14 @@ fun FolderDownloadView(
     ) {
         Card(
             modifier = modifier
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            colors = CardDefaults.cardColors().copy(
+                containerColor = if (anyDownloading.isNotEmpty())
+                MaterialTheme.colorScheme.surfaceVariant.copy(
+                    red = MaterialTheme.colorScheme.surfaceVariant.red + 0.2f
+                ) else
+                MaterialTheme.colorScheme.surfaceVariant
+            )
         ) {
             Box(
                 contentAlignment = Alignment.TopEnd
@@ -113,19 +125,35 @@ fun FolderDownloadView(
                                 .clickable { onChangeExpand() }
                                 .padding(vertical = 8.dp),
                         ) {
-                            if (folderItems.isNotEmpty()) {
-                                Text(
-                                    text = "${folderItems.size} files",
-                                    style = MaterialTheme.typography.labelLarge,
-                                    fontStyle = FontStyle.Italic,
-                                    fontSize = 12.sp
-                                )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                if (folderItems.isNotEmpty()) {
+                                    Text(
+                                        text = "${folderItems.size} files",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontStyle = FontStyle.Italic,
+                                        fontSize = 12.sp
+                                    )
+                                }
+
+                                if (anyDownloading.isNotEmpty()) {
+                                    VerticalDivider(Modifier.height(16.dp))
+                                    Text(
+                                        text = "${anyDownloading.size} downloading",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        fontSize = 12.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
                             }
-                            Spacer(Modifier.weight(1f))
+
+//                            Spacer(Modifier.weight(1f))
                             Icon(
                                 imageVector = Icons.Default.KeyboardArrowDown,
                                 contentDescription = "Expand",
-                                modifier = Modifier.rotate(rotationState)
+                                modifier = Modifier.rotate(rotationState).padding(start = 8.dp)
                             )
                         }
 
@@ -147,7 +175,7 @@ fun FolderDownloadView(
                 modifier = Modifier.padding(top = 8.dp),
 //                    verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                folderItems.forEach({ downloadItem ->
+                folderItems.forEach { downloadItem ->
                     DownloadItem(
                         downloadItem,
                         onAction,
@@ -158,7 +186,7 @@ fun FolderDownloadView(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant
                         )
                     )
-                })
+                }
             }
         }
     }
@@ -189,7 +217,7 @@ private fun FolderDownloadItemPreview() {
                         runtime = "1h 34min"
 
                     ),
-                    downloadModel = if (false) DownloadModel(
+                    downloadModel = if (true) DownloadModel(
                         url = "",
                         path = "",
                         fileName = "",
