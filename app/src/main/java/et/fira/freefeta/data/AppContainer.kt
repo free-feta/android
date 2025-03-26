@@ -20,8 +20,11 @@ import et.fira.freefeta.data.file.RemoteFileRepository
 import et.fira.freefeta.data.file.RemoteFileRepositoryImpl
 import et.fira.freefeta.network.FreeFetaApiService
 import et.fira.freefeta.network.TeleFileDownloaderService
+import okhttp3.Cache
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.File
 
 private const val USER_PREFERENCE_NAME = "user_preferences"
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
@@ -40,7 +43,7 @@ interface AppContainer {
 
 }
 
-class DefaultAppContainer(context: Context): AppContainer {
+class DefaultAppContainer(context: Context) : AppContainer {
     private val ketch = Ketch.builder()
         .setNotificationConfig(
             config = NotificationConfig(
@@ -53,9 +56,19 @@ class DefaultAppContainer(context: Context): AppContainer {
     private val baseUrl =
         "https://raw.githubusercontent.com/fira-pro/json-store/refs/heads/main/free-feta/"
 
+    private val client: OkHttpClient = OkHttpClient.Builder()
+        .cache(
+            Cache(
+                directory = File(context.cacheDir, "http_cache"),
+                maxSize = 50L * 1024L * 1024L // 50 MiB
+            )
+        )
+        .build()
+
     private val retrofit = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
         .baseUrl(baseUrl)
+        .client(client)
         .build()
 
     private val retrofitService: FreeFetaApiService by lazy {
@@ -81,7 +94,10 @@ class DefaultAppContainer(context: Context): AppContainer {
         )
     }
     override val adRepository: AdRepository by lazy {
-        AdRepositoryImpl(FreeFetaDatabase.getDatabase(context).adDao(), freeFetaApiService = retrofitService)
+        AdRepositoryImpl(
+            FreeFetaDatabase.getDatabase(context).adDao(),
+            freeFetaApiService = retrofitService
+        )
     }
     override val userPreferencesRepository: UserPreferencesRepository by lazy {
         UserPreferencesRepository(context.dataStore)
@@ -91,7 +107,8 @@ class DefaultAppContainer(context: Context): AppContainer {
         freeFetaApiService = retrofitService,
         appConfigRepository = appConfigRepository
     )
-    override val workManagerSynUpdateRepository: SyncUpdateRepository = WorkManagerSynUpdateRepository(context)
+    override val workManagerSynUpdateRepository: SyncUpdateRepository =
+        WorkManagerSynUpdateRepository(context)
 
 
 }
