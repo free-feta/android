@@ -1,6 +1,7 @@
 package et.fira.freefeta.data
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -11,10 +12,15 @@ import et.fira.freefeta.data.file.FileDao
 import et.fira.freefeta.model.Advertisement
 import et.fira.freefeta.model.AppConfig
 import et.fira.freefeta.model.FileEntity
+import java.io.IOException
 
-@Database(entities = [FileEntity::class, AppConfig::class, Advertisement::class], version = 14, exportSchema = false)
+@Database(
+    entities = [FileEntity::class, AppConfig::class, Advertisement::class],
+    version = 14,
+    exportSchema = false
+)
 @TypeConverters(Converters::class)
-abstract class FreeFetaDatabase: RoomDatabase() {
+abstract class FreeFetaDatabase : RoomDatabase() {
     abstract fun fileDao(): FileDao
     abstract fun appConfigDao(): AppConfigDao
     abstract fun adDao(): AdDao
@@ -27,12 +33,29 @@ abstract class FreeFetaDatabase: RoomDatabase() {
             return Instance ?: synchronized(this) {
                 Room.databaseBuilder(
                     context, FreeFetaDatabase::class.java, "free_feta_database"
-                )
-                    .createFromAsset("database/free_feta_database.db")
+                ).apply {
+                    if (assetExists(context, "database_name.db")) {
+                        createFromAsset("database/free_feta_database.db")
+                    } else {
+                        Log.w(
+                            "DatabaseWarning",
+                            "Database asset file is missing. Creating an empty database."
+                        )
+                    }
+                }
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { Instance = it }
             }
         }
+    }
+}
+
+private fun assetExists(context: Context, fileName: String): Boolean {
+    return try {
+        context.assets.open(fileName).close()
+        true
+    } catch (e: IOException) {
+        false
     }
 }
