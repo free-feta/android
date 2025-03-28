@@ -30,6 +30,8 @@ object AppConstants {
 
     object About {
         const val APP_TG_CHANNEL = "https://t.me/FreeFeta"
+        const val APP_YT = "https://youtube.com/@freefeta"
+        const val APP_TIKTOK = "https://www.tiktok.com/@freefeta"
         const val DEVELOPER_TG_ACC = "https://t.me/fira_xd"
         const val DEVELOPER_EMAIL = "firaoldebebe7@gmail.com"
     }

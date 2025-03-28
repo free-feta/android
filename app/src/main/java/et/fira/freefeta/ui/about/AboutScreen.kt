@@ -181,6 +181,46 @@ fun AboutScreen(navigateBack: () -> Boolean) {
                             Text("Join our Telegram Channel")
                         }
 
+                        //YT
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    uriHandler.openUri(AppConstants.About.APP_YT)
+                                }
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.yt_icon),
+                                contentDescription = "Youtube",
+                                modifier = Modifier.size(28.dp),
+                                tint = Color.Unspecified
+                            )
+                            Text("Subscribe to our Youtube channel")
+                        }
+
+                        //Tiktok
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    uriHandler.openUri(AppConstants.About.APP_TIKTOK)
+                                }
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.tiktok_icon),
+                                contentDescription = "Tiktok",
+                                modifier = Modifier.size(28.dp),
+                                tint = Color.Unspecified
+                            )
+                            Text("Follow us on Tiktok")
+                        }
+
                         // Developer Contact
                         Row(
                             modifier = Modifier
