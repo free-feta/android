@@ -1,22 +1,15 @@
 package et.fira.freefeta.ui.home
 
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
-import android.os.Environment
-import android.provider.DocumentsContract
 import android.provider.Settings
-import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ketch.DownloadModel
-import com.ketch.Status
 import et.fira.freefeta.data.UserPreferencesRepository
 import et.fira.freefeta.data.file.FileDownloaderRepository
 import et.fira.freefeta.data.file.LocalFileRepository
@@ -26,6 +19,7 @@ import et.fira.freefeta.util.AppConstants
 import et.fira.freefeta.util.Util.syncNewFilesAndClearGarbage
 import et.fira.freefeta.util.createAndCheckFolder
 import et.fira.freefeta.util.hasFilePermission
+import et.fira.freefeta.util.openFolder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -151,125 +145,14 @@ class HomeViewModel(
             is DownloadAction.Retry -> fileDownloaderRepository.retryDownload(downloadAction.downloadModel.id)
             is DownloadAction.Resume -> fileDownloaderRepository.resumeDownload(downloadAction.downloadModel.id)
             is DownloadAction.Download -> downloadFile(downloadAction.context, downloadAction.file)
-            is DownloadAction.Open -> openFile(downloadAction.context, downloadAction.downloadModel)
-            is DownloadAction.OpenFolder -> openFolder(downloadAction.context, downloadAction.folderName)
+            is DownloadAction.Open -> downloadAction.onOpen()
+            is DownloadAction.OpenFolder -> downloadAction.context.openFolder(downloadAction.folderName)
             is DownloadAction.DeleteRequest -> onDeleteRequest(downloadAction.file.id, downloadAction.downloadModel.id)
             is DownloadAction.ConfirmDelete -> confirmDelete(downloadAction.neverShowAgain)
             is DownloadAction.DismissDelete -> dismissDialog()
             is DownloadAction.Play -> downloadAction.onPlay()
         }
     }
-
-    // In your ViewModel or composable
-    private fun openFile(context: Context, downloadModel: DownloadModel) {
-        // 1. Check Download Status: Early Exit
-        if (downloadModel.status != Status.SUCCESS) {
-            Toast.makeText(context, "File not downloaded yet", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // 2. Construct File Path: Use Path.Combine
-        val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-        if (downloadsDir == null) {
-            Toast.makeText(context, "Downloads directory not accessible", Toast.LENGTH_SHORT).show()
-            return
-        }
-        val file = File("${downloadModel.path}/${downloadModel.fileName}")
-
-        // 3. Check File Existence: Early Exit
-        if (!file.exists()) {
-            Toast.makeText(context, "File not found", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // 4. Get Content URI: Handle Null
-        val contentUri: Uri = try {
-//            if (Build.VERSION.SDK_INT >= 29) {
-//                MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL).buildUpon()
-//                    .appendPath(AppConstants.File.DOWNLOAD_FOLDER_NAME)
-//                    .appendPath(downloadModel.fileName)
-//                    .build()
-//            } else {
-                FileProvider.getUriForFile(
-                    context,
-                    "${context.packageName}.provider", // Must match manifest declaration
-                    file
-                )
-//            }
-        } catch (e: IllegalArgumentException) {
-            Toast.makeText(context, "File not accessible", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // 5. Determine MIME Type: Use MimeTypeMap
-        val mimeType = getMimeType(file) ?: "application/octet-stream" // Default to all types if unknown
-
-        // 6. Create Intent: Use apply for clarity
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(contentUri, mimeType)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-
-        // 7. Start Activity: Handle Exceptions More Granularity
-        try {
-            context.startActivity(Intent.createChooser(intent, "Open with"))
-        } catch (e: ActivityNotFoundException) {
-            Toast.makeText(context, "No app found to open this file", Toast.LENGTH_SHORT).show()
-        } catch (e: SecurityException) {
-            Toast.makeText(context, "Security error: Cannot access file", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun openFolder(context: Context, folderName: String? = null) {
-        val folderPath = "${Environment.DIRECTORY_DOWNLOADS}/${AppConstants.File.DOWNLOAD_FOLDER_NAME}" +
-                if (folderName != null) "/$folderName" else ""
-
-        val file = File(Environment.getExternalStorageDirectory(), folderPath)
-        // 3. Check Folder Existence: Early Exit
-        if (!file.exists()) {
-            Toast.makeText(context, "Folder not found", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-
-            if (Build.VERSION.SDK_INT >= 24) {
-                // SAF for Android 7+
-                val uri = DocumentsContract.buildDocumentUri(
-                    "com.android.externalstorage.documents",
-                    "primary:$folderPath"
-                )
-                setDataAndType(uri, DocumentsContract.Document.MIME_TYPE_DIR)
-            } else {
-                // Legacy FileProvider for Android 5-6
-                val uri = FileProvider.getUriForFile(
-                    context,
-                    "${context.packageName}.provider",
-                    file
-                )
-                setDataAndType(uri, "resource/folder")
-            }
-        }
-
-        try {
-            context.startActivity(Intent.createChooser(intent, "Open folder with"))
-        } catch (e: ActivityNotFoundException) {
-            Toast.makeText(context, "No file manager installed", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-
-    // 8. Helper Function for MIME Type
-    private fun getMimeType(file: File): String? {
-        val extension = file.extension.lowercase() // Ensure lowercase for consistency
-        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
-    }
-
-
-
 }
 
 data class DeleteFileInfo(
