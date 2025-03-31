@@ -35,6 +35,7 @@ import com.ketch.Status
 import et.fira.freefeta.R
 import et.fira.freefeta.model.FileEntity
 import et.fira.freefeta.ui.player.PlayerDestination
+import et.fira.freefeta.util.openFile
 import kotlin.reflect.KFunction1
 
 
@@ -98,7 +99,15 @@ fun FileActionView(
                     iconRes = R.drawable.external_icon,
                     contentDescription = stringResource(R.string.open_in_external_player),
                     tint = MaterialTheme.colorScheme.primary,
-                    onClick = {onAction(DownloadAction.Open(context, downloadModel))}
+                    onClick = {
+                        triggerAd {
+                            onAction(DownloadAction.Open(
+                                onOpen = {
+                                    context.openFile(downloadModel)
+                                }
+                            ))
+                        }
+                    }
                 )
 
                 if (file.isPlayable) {

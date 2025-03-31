@@ -35,6 +35,7 @@ import et.fira.freefeta.model.icon
 import et.fira.freefeta.ui.ad.AdViewModel
 import et.fira.freefeta.ui.player.PlayerDestination
 import et.fira.freefeta.ui.theme.FreeFetaTheme
+import et.fira.freefeta.util.openFile
 import kotlin.reflect.KFunction1
 
 @Composable
@@ -72,7 +73,13 @@ fun FileInfoView(
                                     ))
                                 }
                             } else {
-                                onAction(DownloadAction.Open(context, downloadModel))
+                                triggerAd {
+                                    onAction(DownloadAction.Open(
+                                        onOpen = {
+                                            context.openFile(downloadModel)
+                                        }
+                                    ))
+                                }
                             }
 
                         }

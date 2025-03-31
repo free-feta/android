@@ -34,7 +34,7 @@ sealed interface DownloadAction {
     data class Retry(var downloadModel: DownloadModel): DownloadAction
     data class Resume(var downloadModel: DownloadModel): DownloadAction
     data class Download(var context: Context, var file: FileEntity): DownloadAction
-    data class Open(var context: Context, var downloadModel: DownloadModel): DownloadAction
+    data class Open(var onOpen: () -> Unit): DownloadAction
     data class OpenFolder(var context: Context, var folderName: String?): DownloadAction
     data class DeleteRequest(var downloadModel: DownloadModel, var file: FileEntity): DownloadAction
     data class ConfirmDelete(var neverShowAgain: Boolean): DownloadAction
