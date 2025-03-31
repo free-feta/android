@@ -22,8 +22,8 @@ class AdViewModel(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 adRepository.syncNewAds()
-                showInitialAd()
             }
+            showInitialAd()
         }
     }
 
