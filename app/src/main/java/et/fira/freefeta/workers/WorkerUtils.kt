@@ -55,6 +55,7 @@ fun makeUpdateNotification(title: CharSequence, message: String, context: Contex
         .setPriority(NotificationCompat.PRIORITY_HIGH)
         .setVibrate(LongArray(0))
         .setContentIntent(pendingIntent)
+        .setAutoCancel(true)
 
     // Show the notification
     if (ActivityCompat.checkSelfPermission(
