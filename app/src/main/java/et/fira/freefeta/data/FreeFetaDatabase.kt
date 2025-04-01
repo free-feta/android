@@ -16,7 +16,7 @@ import java.io.IOException
 
 @Database(
     entities = [FileEntity::class, AppConfig::class, Advertisement::class],
-    version = 14,
+    version = 15,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
