@@ -47,11 +47,11 @@ class UpdateViewModel(
                         val installedVersion = context.getInstalledVersion()
 
                         when {
-                            isVersionOlder(installedVersion, config.minimumVersion) -> {
+                            isVersionOlder(installedVersion, config.minimumVersion) && config.downloadUrl.isNotEmpty() -> {
                                 _uiState.value =
                                     _uiState.value.copy(showUpdateDialog = true, forceUpdate = true)
                             }
-                            isVersionOlder(installedVersion, config.latestVersion) -> {
+                            isVersionOlder(installedVersion, config.latestVersion) && config.downloadUrl.isNotEmpty() -> {
                                 _uiState.value =
                                     _uiState.value.copy(showUpdateDialog = true, forceUpdate = false)
                             }
