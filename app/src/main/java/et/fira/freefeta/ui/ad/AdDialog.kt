@@ -2,7 +2,7 @@ package et.fira.freefeta.ui.ad
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.net.Uri
+import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.net.toUri
 import et.fira.freefeta.R
 import et.fira.freefeta.model.Advertisement
 import et.fira.freefeta.ui.theme.FreeFetaTheme
@@ -92,6 +94,7 @@ fun AdDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .fillMaxHeight(0.8f)
                     .padding(vertical = 8.dp)
             ) {
                 Row(
@@ -150,10 +153,15 @@ fun AdDialog(
                 )
                 Spacer(Modifier.height(8.dp))
                 if (ad.isHtml) {
-                    HtmlAd(
-                        htmlString = ad.body,
-                        Modifier.padding(vertical = 8.dp)
-                    )
+                    Box(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        HtmlAd(
+                            htmlString = ad.body,
+                            Modifier.padding(vertical = 8.dp)
+                        )
+                    }
+
                 } else {
                     TextAd(
                         text = ad.body,
@@ -196,7 +204,7 @@ fun TextAd(
         modifier = modifier.clickable(
             enabled = url != null, onClick = {
                 val intent = Intent(Intent.ACTION_VIEW).apply {
-                    data = Uri.parse(url)
+                    data = url?.toUri()
                 }
                 // Start the activity with the intent
                 context.startActivity(intent)
@@ -216,11 +224,16 @@ fun HtmlAd(
             WebView(ctx).apply {
                 settings.javaScriptEnabled = true
                 settings.setSupportZoom(true)
+
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
             }
         },
         update = { webView ->
             webView.loadDataWithBaseURL(
-                null,
+                "about:blank",
                 htmlString,
                 "text/html",
                 "UTF-8",
