@@ -16,7 +16,7 @@ data class Advertisement (
 
     @ColumnInfo(name = "show_on_startup")
     @SerializedName(value = "show_on_startup")
-    val showOnStartup: Boolean = false,
+    val showOnStartup: Boolean? = null, // When set to null it will be used for both startup and on demand
 
     @ColumnInfo(name = "is_html")
     @SerializedName(value = "is_html")

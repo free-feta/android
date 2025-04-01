@@ -68,7 +68,7 @@ class AdRepositoryImpl(
         try {
             val ads = adDao.getAllAds()
 //            Log.d("AdRepositoryImpl", "Ads filtered random: ${ads.filter { it.showOnStartup }.random()}")
-            val starUpAd = ads.filter { !it.expired && it.showOnStartup }.random()
+            val starUpAd = ads.filter { !it.expired && (it.showOnStartup == null || it.showOnStartup) }.random()
 
             if (starUpAd.isOneTime) {
                 adDao.setExpired(starUpAd.id, true)
@@ -85,7 +85,7 @@ class AdRepositoryImpl(
         try {
             val ads = adDao.getAllAds()
 //            Log.d("AdRepositoryImpl", "Ads 4 on demand: $ads")
-            val onDemandAd = ads.filter { !it.expired && !it.showOnStartup }.random()
+            val onDemandAd = ads.filter { !it.expired && (it.showOnStartup == null || !it.showOnStartup) }.random()
             if (onDemandAd.isOneTime) {
                 adDao.setExpired(onDemandAd.id, true)
             }
