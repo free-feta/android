@@ -14,6 +14,8 @@ import et.fira.freefeta.model.AppConfig
 import et.fira.freefeta.model.FileEntity
 import java.io.IOException
 
+private const val DB_FILE = "database/free_feta_database.db"
+
 @Database(
     entities = [FileEntity::class, AppConfig::class, Advertisement::class],
     version = 15,
@@ -34,8 +36,8 @@ abstract class FreeFetaDatabase : RoomDatabase() {
                 Room.databaseBuilder(
                     context, FreeFetaDatabase::class.java, "free_feta_database"
                 ).apply {
-                    if (assetExists(context, "database_name.db")) {
-                        createFromAsset("database/free_feta_database.db")
+                    if (assetExists(context, DB_FILE)) {
+                        createFromAsset(DB_FILE)
                     } else {
                         Log.w(
                             "DatabaseWarning",
