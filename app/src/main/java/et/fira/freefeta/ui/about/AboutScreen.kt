@@ -136,8 +136,8 @@ fun AboutScreen(navigateBack: () -> Boolean) {
                                 modifier = Modifier.padding(top = 8.dp),
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text("• The service only works on the Ethio Telecom network")
                                 Text("• Some video codecs may not be supported by the in-app player. Try using an external player like VLC or MX Player.")
+                                Text("• The service only works on the Ethio Telecom network")
                                 Text("• Make sure you are not using a VPN for the service to work.")
                                 Text("• If connection fails, try toggling airplane mode on and off a few times")
                                 Text("• Check your connectivity status and follow the instructions by clicking the info icon (ℹ\uFE0F) at the top right of the Home screen.")
