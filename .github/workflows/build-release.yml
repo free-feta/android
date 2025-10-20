@@ -3,9 +3,9 @@ name: Build and Release FreeFeta
 on:
   push:
     tags:
-      - 'v*'   # Runs when a tag like v1.0 is pushed
+      - 'v*'
   workflow_dispatch:
-  
+
 permissions:
   contents: write
 
@@ -23,33 +23,31 @@ jobs:
           distribution: 'temurin'
           java-version: 17
 
-      - name: Decode keystore
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > freefeta_keystore.jks
-        shell: bash
-
-      - name: Set environment variables
-        run: |
-          echo "KEYSTORE_PATH=freefeta_keystore.jks" >> $GITHUB_ENV
-          echo "KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
-          echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
-          echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build Release APK
         run: ./gradlew assembleProductionRelease
 
+      - name: Sign APK
+        id: sign
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: app/build/outputs/apk/production/release
+          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
       - name: Upload release APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: FreeFeta-Release
-          path: app/build/outputs/apk/production/release/*.apk
+          path: ${{ steps.sign.outputs.signedReleaseFile }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: app/build/outputs/apk/production/release/*.apk
+          files: ${{ steps.sign.outputs.signedReleaseFile }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
