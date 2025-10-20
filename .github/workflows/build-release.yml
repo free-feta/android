@@ -22,6 +22,14 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 17
+          
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 35           # matches compileSdk
+          build-tools: 35.0.0     # must match compileSdk (or higher)
+          cmake: false
+          ndk: false
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -38,16 +46,26 @@ jobs:
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+          
+      - name: Rename signed APK
+        id: rename
+        run: |
+          # Extract version from tag
+          VERSION=${GITHUB_REF#refs/tags/}
+          SIGNED_APK=$(ls app/build/outputs/apk/production/release/*-signed.apk)
+          mv "$SIGNED_APK" "app/build/outputs/apk/production/release/FreeFeta-$VERSION.apk"
+        shell: bash
 
       - name: Upload release APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: FreeFeta-Release
-          path: ${{ steps.sign.outputs.signedReleaseFile }}
+          path: app/build/outputs/apk/production/release/FreeFeta-*.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ steps.sign.outputs.signedReleaseFile }}
+          files: app/build/outputs/apk/production/release/FreeFeta-*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
