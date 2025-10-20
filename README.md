@@ -1,3 +1,5 @@
+<img width="1000" height="600" alt="flyer" src="https://github.com/user-attachments/assets/c2521a7c-e211-4192-b6fa-58936b95cbee" />
+
 **FreeFeta** lets you download and enjoy movies, music, TV shows, podcasts, audiobooks, and more — **without needing a data package or airtime**.  
 It’s designed for speed, flexibility, and complete freedom of entertainment access.
 
@@ -7,7 +9,7 @@ It’s designed for speed, flexibility, and complete freedom of entertainment ac
 
 ## ✨ Features
 
-- 🎥 **Stream or download** Movies, TV shows, Music, Podcasts, and Audiobooks  
+- 🎥 **Download** Movies, TV shows, Music, Podcasts, and Audiobooks  
 - ⚙️ **Built with modern Android technologies** — Jetpack Compose, Room, Retrofit, Coroutines  
 - 📦 **Offline access** — watch your media anytime, anywhere  
 - ⏬ **Full-featured downloader** — fast, reliable, and resilient  
@@ -87,11 +89,11 @@ If you’d like to contribute:
 
 | Screenshot                 | Description                       |
 | -------------------------- | --------------------------------- |
-| ![Screenshot 1](link_here) | Home screen showcasing movie list |
-| ![Screenshot 2](link_here) | Media player with ExoPlayer       |
-| ![Screenshot 3](link_here) | Downloader in action              |
+| ![Home Screen](https://github.com/user-attachments/assets/5319546c-384e-4ccc-8dbc-06759113f9fc) | Home screen showcasing movie list |
+| ![Media Player](https://github.com/user-attachments/assets/ce7329f9-e19c-4668-820e-cd9d9969d2b7) | Media player with ExoPlayer       |
+| ![Downloader](https://github.com/user-attachments/assets/1cc7aa0c-fa6c-4e63-8c33-b1b710f7ceb5) | Downloader in action              |
 
-🎥 **Demo Video:** [Watch on YouTube](link_here)
+https://github.com/user-attachments/assets/e1e51a7c-a661-44bc-98b2-e0192f25a323
 
 ---
 
