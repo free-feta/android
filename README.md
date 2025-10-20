@@ -46,7 +46,7 @@ It’s designed for speed, flexibility, and complete freedom of entertainment ac
 
 ### Clone the Repository
 ```bash
-git clone https://github.com/<your-username>/FreeFeta.git
+git clone https://github.com/fira-pro/FreeFeta.git
 cd FreeFeta
 ````
 
