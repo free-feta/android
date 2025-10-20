@@ -1,4 +1,4 @@
-<img width="1000" height="400" alt="flyer" src="https://github.com/user-attachments/assets/c2521a7c-e211-4192-b6fa-58936b95cbee" />
+<img width="1000" height="600" alt="flyer" src="https://github.com/user-attachments/assets/c2521a7c-e211-4192-b6fa-58936b95cbee" />
 
 **FreeFeta** lets you download and enjoy movies, music, TV shows, podcasts, audiobooks, and more — **without needing a data package or airtime**.  
 It’s designed for speed, flexibility, and complete freedom of entertainment access.
