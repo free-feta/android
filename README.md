@@ -39,10 +39,10 @@ It’s designed for speed, flexibility, and complete freedom of entertainment ac
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Android Studio **Arctic Fox (2020.3.1)** or newer  
-- Gradle **8.0+**  
+- Android Studio **Ladybug (2024.2.1)** or newer  
+- Gradle **8.11.1** (automatically handled via Gradle wrapper) 
 - Minimum SDK: **22**  
-- JDK **11 or higher**
+- JDK **8** (set in `jvmTarget = "1.8"`)
 
 ### Clone the Repository
 ```bash
