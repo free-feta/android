@@ -48,8 +48,8 @@ It’s designed for speed, flexibility, and complete freedom of entertainment ac
 
 ### Clone the Repository
 ```bash
-git clone https://github.com/fira-pro/FreeFeta.git
-cd FreeFeta
+git clone https://github.com/free-feta/android.git
+cd android
 ````
 
 ### Build & Run
