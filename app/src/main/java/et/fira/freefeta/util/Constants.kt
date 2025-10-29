@@ -6,8 +6,10 @@ object AppConstants {
     }
 
     object Network {
-        const val ZERO_RATING_URL = "https://telebirrchat.ethiomobilemoney.et:21006/sfs/ufile?digest=fidcc11a5c7e6853e2212f6656a831039ec&filename=adventures-of-sherlock-holmes.epub"
-        val HEADER_FOR_ZERO_RATING_URL = hashMapOf(
+        const val JSON_STORE_BASE_URL = "https://free-feta.github.io/json-store/store/"
+
+        const val ZERO_RATING_TEST_URL = "https://telebirrchat.ethiomobilemoney.et:21006/sfs/ufile?digest=fidcc11a5c7e6853e2212f6656a831039ec&filename=adventures-of-sherlock-holmes.epub"
+        val ZERO_RATING_HEADER = hashMapOf(
             "appid" to "1012673623603201",
             "access-token" to "34A1367993D9409639D081B3A91159D37FD5DF999E2B97C8C822F92E44DE6A65",
             "User-Agent" to "Dalvik/2.1.0 (Linux; U; Android 7.1.2; ASUS_Z01QD Build/N2G48H)",

@@ -20,6 +20,7 @@ import et.fira.freefeta.data.file.RemoteFileRepository
 import et.fira.freefeta.data.file.RemoteFileRepositoryImpl
 import et.fira.freefeta.network.FreeFetaApiService
 import et.fira.freefeta.network.TeleFileDownloaderService
+import et.fira.freefeta.util.AppConstants
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -53,8 +54,6 @@ class DefaultAppContainer(context: Context) : AppContainer {
         )
         .build(context)
 
-    private val baseUrl =
-        "https://raw.githubusercontent.com/fira-pro/json-store/refs/heads/main/free-feta/"
 
     private val client: OkHttpClient = OkHttpClient.Builder()
         .cache(
@@ -67,7 +66,7 @@ class DefaultAppContainer(context: Context) : AppContainer {
 
     private val retrofit = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
-        .baseUrl(baseUrl)
+        .baseUrl(AppConstants.Network.JSON_STORE_BASE_URL)
         .client(client)
         .build()
 

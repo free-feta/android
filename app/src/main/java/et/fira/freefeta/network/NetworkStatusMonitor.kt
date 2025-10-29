@@ -28,7 +28,7 @@ class NetworkStatusMonitor(
     val networkState: StateFlow<NetworkState> = _networkState
 
     // URLs to check (replace with your actual URLs)
-    private val zeroRatingUrl = AppConstants.Network.ZERO_RATING_URL
+    private val zeroRatingUrl = AppConstants.Network.ZERO_RATING_TEST_URL
     private val genericInternetUrl = "https://www.google.com"
 
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
@@ -82,7 +82,7 @@ class NetworkStatusMonitor(
                     connection = URL(url).openConnection() as HttpURLConnection
                     if (url == zeroRatingUrl) {
                         connection.requestMethod = "GET"
-                        for (header in AppConstants.Network.HEADER_FOR_ZERO_RATING_URL) {
+                        for (header in AppConstants.Network.ZERO_RATING_HEADER) {
                             connection.setRequestProperty(header.key, header.value)
                         }
                     } else {

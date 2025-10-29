@@ -11,7 +11,7 @@ class RequestHeaderInterceptor() : Interceptor {
 
         if (originalUrl.contains("telebirrchat.ethiomobilemoney.et")) {
             val modifiedRequest = originalRequest.newBuilder()
-            for (header in AppConstants.Network.HEADER_FOR_ZERO_RATING_URL) {
+            for (header in AppConstants.Network.ZERO_RATING_HEADER) {
                 modifiedRequest.addHeader(header.key, header.value)
             }
             return chain.proceed(modifiedRequest.build())

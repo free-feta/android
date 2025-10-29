@@ -20,7 +20,7 @@ class TeleFileDownloaderService(
     ): Int {
         val uri = Uri.parse(url)
         val finalHeaders = if (uri.host == "telebirrchat.ethiomobilemoney.et" && headers.isEmpty()) {
-            val zeroRatingHeaders = HashMap(AppConstants.Network.HEADER_FOR_ZERO_RATING_URL
+            val zeroRatingHeaders = HashMap(AppConstants.Network.ZERO_RATING_HEADER
                 .toMutableMap())
             if (sendId != null) {
                 zeroRatingHeaders["sendid"] = sendId
