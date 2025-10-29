@@ -17,7 +17,9 @@ It’s designed for speed, flexibility, and complete freedom of entertainment ac
 - 📡 **Cloud-synced JSON content source** hosted on GitHub  
 - 📊 **Lightweight analytics backend** (Cloudflare-based)  
 - 🎨 **Responsive UI**, optimized for performance and accessibility  
-- 🔒 **Privacy-friendly** — no intrusive permissions or data collection  
+- 🔒 **Privacy-friendly** — no intrusive permissions or data collection
+
+> ℹ️ **FreeFeta** is only accessible in Ethiopia 🇪🇹 and airtime/package free usage is only available on _Ethiotelecom_ networks
 
 ---
 
@@ -87,11 +89,13 @@ If you’d like to contribute:
 
 ## 📸 Screenshots & Demo
 
-| Screenshot | Description |
+| Home screen showcasing movie list | Downloader in action |
 |-------------|-------------|
-| <img src="https://github.com/user-attachments/assets/5319546c-384e-4ccc-8dbc-06759113f9fc" alt="Home Screen" width="280"> | Home screen showcasing movie list |
-| <img src="https://github.com/user-attachments/assets/ce7329f9-e19c-4668-820e-cd9d9969d2b7" alt="Media Player" width="450"> | Media player with ExoPlayer |
-| <img src="https://github.com/user-attachments/assets/1cc7aa0c-fa6c-4e63-8c33-b1b710f7ceb5" alt="Downloader" width="280"> | Downloader in action |
+| <img src="https://github.com/user-attachments/assets/5319546c-384e-4ccc-8dbc-06759113f9fc" alt="Home Screen" width="280"> | <img src="https://github.com/user-attachments/assets/1cc7aa0c-fa6c-4e63-8c33-b1b710f7ceb5" alt="Downloader" width="280"> |
+
+| Media player with ExoPlayer |
+|-------------|
+| <img src="https://github.com/user-attachments/assets/ce7329f9-e19c-4668-820e-cd9d9969d2b7" alt="Media Player" > |
 
 https://github.com/user-attachments/assets/e1e51a7c-a661-44bc-98b2-e0192f25a323
 
@@ -122,4 +126,4 @@ Your support helps FreeFeta reach more people who deserve entertainment freedom.
 
 ---
 
-**Built with ❤️ and Kotlin in Ethiopia.**
+**Built with ❤️ and Kotlin in Ethiopia🇪🇹**
