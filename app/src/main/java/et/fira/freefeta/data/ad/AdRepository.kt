@@ -1,8 +1,8 @@
 package et.fira.freefeta.data.ad
 
-import android.util.Log
 import et.fira.freefeta.model.Advertisement
 import et.fira.freefeta.network.FreeFetaApiService
+import et.fira.freefeta.util.Logger
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.coroutineContext
@@ -67,7 +67,7 @@ class AdRepositoryImpl(
     override suspend fun getStartUpAd(): Advertisement? {
         try {
             val ads = adDao.getAllAds()
-//            Log.d("AdRepositoryImpl", "Ads filtered random: ${ads.filter { it.showOnStartup }.random()}")
+//            Logger.d("AdRepositoryImpl", "Ads filtered random: ${ads.filter { it.showOnStartup }.random()}")
             val starUpAd = ads.filter { !it.expired && (it.showOnStartup == null || it.showOnStartup) }.random()
 
             if (starUpAd.isOneTime) {
@@ -84,7 +84,7 @@ class AdRepositoryImpl(
     override suspend fun getOnDemandAd(): Advertisement? {
         try {
             val ads = adDao.getAllAds()
-//            Log.d("AdRepositoryImpl", "Ads 4 on demand: $ads")
+//            Logger.d("AdRepositoryImpl", "Ads 4 on demand: $ads")
             val onDemandAd = ads.filter { !it.expired && (it.showOnStartup == null || !it.showOnStartup) }.random()
             if (onDemandAd.isOneTime) {
                 adDao.setExpired(onDemandAd.id, true)

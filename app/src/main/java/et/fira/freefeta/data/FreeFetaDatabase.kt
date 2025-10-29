@@ -1,7 +1,6 @@
 package et.fira.freefeta.data
 
 import android.content.Context
-import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -12,6 +11,7 @@ import et.fira.freefeta.data.file.FileDao
 import et.fira.freefeta.model.Advertisement
 import et.fira.freefeta.model.AppConfig
 import et.fira.freefeta.model.FileEntity
+import et.fira.freefeta.util.Logger
 import java.io.IOException
 
 private const val DB_FILE = "database/free_feta_database.db"
@@ -39,7 +39,7 @@ abstract class FreeFetaDatabase : RoomDatabase() {
                     if (assetExists(context, DB_FILE)) {
                         createFromAsset(DB_FILE)
                     } else {
-                        Log.w(
+                        Logger.w(
                             "DatabaseWarning",
                             "Database asset file is missing. Creating an empty database."
                         )

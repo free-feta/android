@@ -1,8 +1,8 @@
 package et.fira.freefeta.data.analytics
 
-import android.util.Log
 import et.fira.freefeta.data.config.AppConfigRepository
 import et.fira.freefeta.network.FreeFetaApiService
+import et.fira.freefeta.util.Logger
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 
@@ -12,7 +12,7 @@ class DeviceAnalyticsRepo(
     private val appConfigRepository: AppConfigRepository
 ) {
     suspend fun sendAnalytics() {
-        Log.d("DeviceAnalyticsRepo", "Sending analytics: $analytics")
+        Logger.d("DeviceAnalyticsRepo", "Sending analytics: $analytics")
         val url = appConfigRepository.getAnalyticsUrl() ?: return
         val deviceInfoJsonString = analytics.toJson()
         val requestBody = deviceInfoJsonString.toRequestBody("application/json".toMediaTypeOrNull())
@@ -20,7 +20,7 @@ class DeviceAnalyticsRepo(
         val response = freeFetaApiService.uploadJsonData(
             url = url,
             requestBody = requestBody)
-        Log.d("DeviceAnalyticsRepo", "Response: ${response?.string()}")
+        Logger.d("DeviceAnalyticsRepo", "Response: ${response?.string()}")
 
     }
 }

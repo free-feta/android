@@ -1,6 +1,5 @@
 package et.fira.freefeta.data
 
-import android.util.Log
 import androidx.annotation.OptIn
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -10,6 +9,7 @@ import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
+import et.fira.freefeta.util.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -21,7 +21,7 @@ class UserPreferencesRepository(
     val themeMode: Flow<ThemeMode> = dataStore.data
         .catch {
             if(it is IOException) {
-                Log.e(TAG, "Error reading preferences.", it)
+                Logger.e(TAG, "Error reading preferences.", it)
                 emit(emptyPreferences())
             } else {
                 throw it
@@ -36,7 +36,7 @@ class UserPreferencesRepository(
     val showDeleteDialog: Flow<Boolean> = dataStore.data
         .catch {
             if(it is IOException) {
-                Log.e(TAG, "Error reading preferences.", it)
+                Logger.e(TAG, "Error reading preferences.", it)
                 emit(emptyPreferences())
             } else {
                 throw it
@@ -49,7 +49,7 @@ class UserPreferencesRepository(
     val onboardingCompleted: Flow<Boolean> = dataStore.data
         .catch {
             if(it is IOException) {
-                Log.e(TAG, "Error reading preferences.", it)
+                Logger.e(TAG, "Error reading preferences.", it)
                 emit(emptyPreferences())
             } else {
                 throw it
@@ -62,7 +62,7 @@ class UserPreferencesRepository(
     val resizeMode: Flow<ResizeMode> = dataStore.data
         .catch {
         if(it is IOException) {
-            Log.e(TAG, "Error reading preferences.", it)
+            Logger.e(TAG, "Error reading preferences.", it)
             emit(emptyPreferences())
         } else {
             throw it

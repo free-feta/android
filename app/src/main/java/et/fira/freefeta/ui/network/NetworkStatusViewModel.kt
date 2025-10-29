@@ -1,12 +1,12 @@
 package et.fira.freefeta.ui.network
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import et.fira.freefeta.FreeFetaApplication
 import et.fira.freefeta.network.NetworkState
 import et.fira.freefeta.network.NetworkStatusMonitor
+import et.fira.freefeta.util.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -55,7 +55,7 @@ class NetworkStatusViewModel(
     }
 
     override fun onCleared() {
-        Log.d("NetworkStatusViewM", "view model cleared")
+        Logger.d("NetworkStatusViewM", "view model cleared")
         super.onCleared()
         networkMonitor.stopMonitoring()
     }

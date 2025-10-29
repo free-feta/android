@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
-import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -72,7 +71,7 @@ object Util {
             if (garbageFiles.isNotEmpty()) {
                 localFileRepository.deleteFile(garbageFiles)
             }
-            Log.d("HomeViewModel", "Fetched ${newFiles.size} new files")
+            Logger.d("HomeViewModel", "Fetched ${newFiles.size} new files")
             return newFiles.size
 
         } catch (e: Exception) {

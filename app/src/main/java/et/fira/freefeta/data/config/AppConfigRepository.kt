@@ -1,9 +1,9 @@
 package et.fira.freefeta.data.config
 
-import android.util.Log
 import android.webkit.URLUtil
 import et.fira.freefeta.model.AppConfig
 import et.fira.freefeta.network.FreeFetaApiService
+import et.fira.freefeta.util.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -28,9 +28,9 @@ class AppConfigRepositoryImpl(
     override suspend fun syncConfig(): AppConfig? {
         try {
             val fetchedConfig = freeFetaApiService.getConfig()
-            Log.d("AppConfigRepository", "Fetched config: $fetchedConfig")
+            Logger.d("AppConfigRepository", "Fetched config: $fetchedConfig")
             insertConfig(fetchedConfig)
-            Log.d("AppConfigRepository", "after insert in sync, thread: ${Thread.currentThread().name}")
+            Logger.d("AppConfigRepository", "after insert in sync, thread: ${Thread.currentThread().name}")
             return fetchedConfig
 
         } catch (e: Exception) {
@@ -43,7 +43,7 @@ class AppConfigRepositoryImpl(
     }
     override suspend fun getConfig(): AppConfig? {
         try {
-            Log.d("AppConfigRepository", "before syncing, thread: ${Thread.currentThread().name}")
+            Logger.d("AppConfigRepository", "before syncing, thread: ${Thread.currentThread().name}")
             syncConfig()
             return appConfigDao.getConfig()
         } catch (e: Exception) {
@@ -57,9 +57,9 @@ class AppConfigRepositoryImpl(
 
     override suspend fun getAnalyticsUrl(): String? {
         try {
-            Log.d("AppConfigRepository", "Fetching analytics URL, thread: ${Thread.currentThread().name}")
+            Logger.d("AppConfigRepository", "Fetching analytics URL, thread: ${Thread.currentThread().name}")
             val url = getConfig()?.analyticsUrl
-            Log.d("AppConfigRepository", "Fetched analytics URL: $url")
+            Logger.d("AppConfigRepository", "Fetched analytics URL: $url")
             return if (URLUtil.isValidUrl(url)) {
                 url
             } else {

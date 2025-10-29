@@ -4,12 +4,12 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
-import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import et.fira.freefeta.FreeFetaApplication
 import et.fira.freefeta.ui.update.getInstalledVersion
 import et.fira.freefeta.util.AppConstants
+import et.fira.freefeta.util.Logger
 import et.fira.freefeta.util.Util.isVersionOlder
 import et.fira.freefeta.util.Util.syncNewFilesAndClearGarbage
 import kotlinx.coroutines.Dispatchers
@@ -63,7 +63,7 @@ class SyncUpdateWorker(ctx: Context, params: WorkerParameters): CoroutineWorker(
                     Result.retry()
                 }
             } catch (throwable: Throwable) {
-                Log.e(TAG, "Error syncing updates, retrying", throwable)
+                Logger.e(TAG, "Error syncing updates, retrying", throwable)
                 Result.retry()
             }
         }
