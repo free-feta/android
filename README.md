@@ -10,14 +10,14 @@ It’s designed for speed, flexibility, and complete freedom of entertainment ac
 ## ✨ Features
 
 - 🎥 **Download** Movies, TV shows, Music, Podcasts, and Audiobooks  
-- ⚙️ **Built with modern Android technologies** — Jetpack Compose, Room, Retrofit, Coroutines  
-- 📦 **Offline access** — watch your media anytime, anywhere  
-- ⏬ **Full-featured downloader** — fast, reliable, and resilient  
+- ⚙️ **Built with modern Android technologies**  Jetpack Compose, Room, Retrofit, Coroutines  
+- 📦 **Offline access**  watch your media anytime, anywhere  
+- ⏬ **Full-featured downloader**  fast, reliable, and resilient  
 - 🎧 **Integrated media player** powered by [ExoPlayer](https://developer.android.com/guide/topics/media/exoplayer)  
 - 📡 **Cloud-synced JSON content source** hosted on GitHub  
 - 📊 **Lightweight analytics backend** (Cloudflare-based)  
 - 🎨 **Responsive UI**, optimized for performance and accessibility  
-- 🔒 **Privacy-friendly** — no intrusive permissions or data collection
+- 🔒 **Privacy-friendly**  no intrusive permissions or data collection
 
 > ℹ️ **FreeFeta** is only accessible in Ethiopia 🇪🇹 and airtime/package free usage is only available on _Ethiotelecom_ networks
 
